@@ -18,6 +18,16 @@ def fxn_expGauss(x, amp, mu, sigma, lamb):
     val = amp*(lamb/2)*((math.e)**((lamb/2)*(2*mu+lamb*(sigma**2)+2*x)))*comp_err_func
 
 
+def TargetFoil(tgtz):
+    tgtz0 = -4300. # target center in detector coordinates
+    tgtdz = 22.222222 # target spacing
+    ntgt = 37 # number of target foils
+    tgt0z = tgtz0 - 0.5*(ntgt-1)*tgtdz
+    tgtnum = (tgtz-tgt0z)/tgtdz
+    itgt = int(round(tgtnum))
+    return itgt
+
+
 class CeAna(object):
     def __init__(self,momrange,minNHits,minFitCon,sids):
         self.MomRange = momrange
@@ -38,13 +48,24 @@ class CeAna(object):
         MCMom = []
         MomReso = []
         MomResp = []
-        OMomMC = []
-        ORhoMC = []
-        OZMC = []
+        # MC origin information
+#        ORho = []*2
+        ORho = []
+#        ORho[0] = []
+#        ORho[1] = []
+        OCost = []
+        OFoil = []
+        OPhi = []
+        # MC true foil intersection
         TgtRhoMC = []
+        TgtCostMC = []
+        TgtPhiMC = []
+        TgtFoilMC = []
+        # Reco foil intersection
         TgtRho = []
-        TgtZMC = []
-        TgtZ = []
+        TgtCost = []
+        TgtPhi = []
+        TgtFoil = []
         elPDG = 11
         for isid in range(len(self.SIDs)+1) : # add 1 for target
             Mom.append([])
@@ -59,7 +80,7 @@ class CeAna(object):
         rfile = uproot.open(files[0]+":EventNtuple")
         print(rfile.keys())
 
-        np.set_printoptions(precision=2,floatmode='fixed')
+        np.set_printoptions(precision=5,floatmode='fixed')
         for batch,rep in uproot.iterate(files,filter_name="/evtinfo|trk|trksegs|trkmcsim|trksegsmc/i",report=True):
             print(batch,type(batch))
             print("Processing batch ",ibatch)
@@ -86,14 +107,17 @@ class CeAna(object):
             # basic consistency test
             assert((len(runnum) == len( Segs)) & (len(Segs) == len(SegsMC)) & (len(Segs) == len(TrkMC)) & (len(Nhits) == len(Segs)))
             goodMC = (TrkMC.pdg == elPDG) & (TrkMC.trkrel._rel == 0)
-            OMomMC = TrkMC[goodMC].mom.magnitude()
-            goodMC = goodMC & (OMomMC>self.MomRange[0]) & (OMomMC < self.MomRange[1])
-            OMomMC = OMomMC[goodMC]
-            ORhoMC = TrkMC[goodMC].pos.rho()
-            OZMC = TrkMC[goodMC].pos.z()
+            OMom = TrkMC[goodMC].mom.magnitude()
+            goodMC = goodMC & (OMom>self.MomRange[0]) & (OMom < self.MomRange[1])
+            OMom = OMom[goodMC]
+            ORho.extend(TrkMC[goodMC].pos.rho())
+            OPhi.extend(TrkMC[goodMC].pos.phi())
+            OCost.extend(TrkMC[goodMC].mom.cosTheta())
+#            print(np.array(TrkMC.pos.z()))
+            OFoil.extend(list(map(TargetFoil,TrkMC[goodMC].pos.z())))
             SegsMC = SegsMC[goodMC]
             Segs = Segs[goodMC]
-            MCMom.extend(OMomMC)
+            MCMom.extend(OMom)
             # sample the fits at the specified
             for isid in range(len(self.SIDs)) :
                 sid = self.SIDs[isid]
@@ -113,7 +137,7 @@ class CeAna(object):
                 Mom[isid].extend(mom)
                 momreso = mom - momMC
                 MomReso[isid].extend(momreso)
-                selMomMC = OMomMC[select]
+                selMomMC = OMom[select]
                 momresp = mom - selMomMC
                 MomResp[isid].extend(momresp)
             #foil response
@@ -126,14 +150,18 @@ class CeAna(object):
             avgmom = avgmom[goodtgt]
             avgmom = avgmom/ntgts
             Mom[itarget].extend(avgmom)
-            omomtgt = OMomMC[goodtgt]
+            omomtgt = OMom[goodtgt]
             MomResp[itarget].extend((avgmom-omomtgt))
             TgtRho.extend(ak.flatten(tgtsegs.pos.rho()))
-            TgtZ.extend(ak.flatten(tgtsegs.pos.z()))
+            TgtCost.extend(ak.flatten(tgtsegs.mom.cosTheta()))
+            TgtPhi.extend(ak.flatten(tgtsegs.pos.phi()))
+            TgtFoil.extend(map(TargetFoil,ak.flatten(tgtsegs.pos.z())))
 
             tgtsegsmc = SegsMC[(SegsMC.sid == SID.ST_Foils())]
             TgtRhoMC.extend(ak.flatten(tgtsegsmc.pos.rho()))
-            TgtZMC.extend(ak.flatten(tgtsegsmc.pos.z()))
+            TgtCostMC.extend(ak.flatten(tgtsegsmc.mom.cosTheta()))
+            TgtPhiMC.extend(ak.flatten(tgtsegsmc.pos.phi()))
+            TgtFoilMC.extend(map(TargetFoil,ak.flatten(tgtsegsmc.pos.z())))
 
             # test for missing intersections
             hasent = (Segs.sid == 0) & (Segs.mom.z() > 0.0)
@@ -153,17 +181,29 @@ class CeAna(object):
         # plot positions
 #        print(TgtRho)
 #        tz = TgtPos.z()
-        fig, (tgtrho,tgtz) = plt.subplots(1,2,layout='constrained', figsize=(10,5))
-        tgtrho.hist(TgtRho,label="Fit", bins=100, range=[25,120], histtype='step')
-        tgtrho.hist(TgtRhoMC,label="MC", bins=100, range=[25,120], histtype='step')
-        tgtrho.hist(ORhoMC,label="Origin", bins=100, range=[25,120], histtype='step')
+        fig, (tgtrho,tgtfoil,tgtcost,tgtphi) = plt.subplots(1,4,layout='constrained', figsize=(15,5))
+        tgtrho.hist(TgtRho,label="Fit", bins=100, range=[20,80], histtype='step')
+        tgtrho.hist(TgtRhoMC,label="MC", bins=100, range=[20,80], histtype='step')
+        tgtrho.hist(ORho,label="Origin", bins=100, range=[20,80], histtype='step')
         tgtrho.set_xlabel("Rho (mm)")
         tgtrho.set_title("Target Rho")
-        tgtz.hist(TgtZ,label="Fit", bins=100, range=[-4750,-3750], histtype='step')
-        tgtz.hist(TgtZMC,label="MC", bins=100, range=[-4750,-3750], histtype='step')
-        tgtz.hist(OZMC,label="Origin", bins=100, range=[-4750,-3750], histtype='step')
-        tgtz.set_xlabel("Z (mm)")
-        tgtz.set_title("Target Z")
+        tgtfoil.hist(TgtFoil,label="Fit", bins=37, range=[-0.5,36.5], histtype='step')
+        tgtfoil.hist(TgtFoilMC,label="MC", bins=37, range=[-0.5,36.5], histtype='step')
+        tgtfoil.hist(OFoil,label="Origin", bins=37, range=[-0.5,36.5], histtype='step')
+        tgtfoil.set_xlabel("Foil Number")
+        tgtfoil.set_title("Target Foil")
+        tgtcost.hist(TgtCost,label="Fit", bins=100, range=[-1,1], histtype='step')
+        tgtcost.hist(TgtCostMC,label="MC", bins=100, range=[-1,1], histtype='step')
+        tgtcost.hist(OCost,label="Origin", bins=100, range=[-1,1], histtype='step')
+        tgtcost.set_xlabel("Cos($\\Theta$)")
+        tgtcost.set_title("Cos($\\Theta$)")
+        tgtcost.legend(loc="upper left")
+        tgtphi.hist(TgtPhi,label="Fit", bins=100, range=[-math.pi,math.pi], histtype='step')
+        tgtphi.hist(TgtPhiMC,label="MC", bins=100, range=[-math.pi,math.pi], histtype='step')
+        tgtphi.hist(OPhi,label="Origin", bins=100, range=[-math.pi,math.pi], histtype='step')
+        tgtphi.set_xlabel("$\\Phi$")
+        tgtphi.set_title("$\\Phi$")
+        tgtphi.legend(loc="upper left")
 
 
         # plot Momentum
@@ -181,7 +221,7 @@ class CeAna(object):
         MomRespHist = [None]*3
 #        print("Mom[itarget]",Mom[itarget])
 
-        fig, (tgtMom, momVal[0], momVal[1], momVal[2]) = plt.subplots(1,4,layout='constrained', figsize=(10,5))
+        fig, (tgtMom, momVal[0], momVal[1], momVal[2]) = plt.subplots(1,4,layout='constrained', figsize=(15,5))
         tgtMom.hist(Mom[itarget],label="ST", bins=nMomBins, range=momrange, histtype='step')
         tgtMom.set_xlabel("Extrapolated Momentum (MeV)")
         tgtMom.set_title("Upstream ST Foil")
@@ -190,7 +230,7 @@ class CeAna(object):
             momVal[isid].set_xlabel("Fit Momentum (MeV)")
             momVal[isid].set_title(self.TrkLoc[isid])
 
-        fig, (tgtMomResp,momResp[0], momResp[1], momResp[2]) = plt.subplots(1,4,layout='constrained', figsize=(10,5))
+        fig, (tgtMomResp,momResp[0], momResp[1], momResp[2]) = plt.subplots(1,4,layout='constrained', figsize=(15,5))
         tgtMomResp.hist(MomResp[itarget],label="ST", bins=nMomBins, range=momresprange, histtype='step')
         tgtMomResp.set_xlabel("Extrapolated - MC Origin Momentum (MeV)")
         tgtMomResp.set_title("Upstream ST Foil")

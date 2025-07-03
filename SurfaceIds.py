@@ -36,3 +36,46 @@ def DS_Inner():
     return 82
 def DS_Outer():
     return 83
+def SurfaceName(sid):
+    match sid:
+        case 0:
+            return "TT_Front"
+        case 1:
+            return "TT_Mid"
+        case 2:
+            return "TT_Back"
+        case 3:
+            return "TT_Inner"
+        case 4:
+            return "TT_Outer"
+        case 80:
+            return "DS_Front"
+        case 81:
+            return "DS_Back"
+        case 82:
+            return "DS_Inner"
+        case 83:
+            return "DS_Outer"
+        case 100:
+            return "ST_Front"
+        case 101:
+            return "ST_Back"
+        case 102:
+            return "ST_Inner"
+        case 103:
+            return "ST_Outer"
+        case 104:
+            return "ST_Foil"
+        case 90:
+            return "IPA"
+        case 91:
+            return "IPA Front"
+        case 92:
+            return "IPA Back"
+        case 95:
+            return "OPA"
+        case 96:
+            return "TSDA"
+
+        case _:
+            return "Unknown"
