@@ -24,9 +24,18 @@ class HistReflections(object):
         self.MinFitCon = 1.0e-5
         self.MaxDeltaT = 5.0 # nsec
         self.MomRange = momrange
+        self.MinTQ = 0.8 # ANN output
         # Surface Ids
         self.SID = sid
         self.CompName = SID.SurfaceName(sid)
+        # fit quality histograms
+        self.HUpTQ = MyHist.MyHist(name="HUpTQ",bins=100,range=[0.0,1.0],label="Up TrkQual",title="Track Quality",xlabel="ANN Result")
+        self.HDnTQ = MyHist.MyHist(name="HDnTQ",bins=100,range=[0.0,1.0],label="Down TrkQual",title="Track Quality",xlabel="ANN Result")
+        self.HUpFitCon = MyHist.MyHist(name="HUpFitCon",bins=100,range=[0.0,1.0],label="Up FitCon",title="Fit Consistency",xlabel="")
+        self.HDnFitCon = MyHist.MyHist(name="HDnFitCon",bins=100,range=[0.0,1.0],label="Down FitCon",title="Fit Consistency",xlabel="")
+        self.HUpNHits = MyHist.MyHist(name="HUpNHits",bins=100,range=[0.5,100.5],label="Up NActive",title="Fit N Hits",xlabel="N Hits")
+        self.HDnNHits = MyHist.MyHist(name="HDnNHits",bins=100,range=[0.5,100.5],label="Down NActive",title="Fit N Hits",xlabel="N Hits")
+
         # intersection histograms
         nNMatBins = 20
         NMatRange = [-0.5,19.5]
@@ -76,6 +85,7 @@ class HistReflections(object):
             segs = batch['trksegs'] # track fit samples
             nhits = batch['trk.nactive']  # track N hits
             fitcon = batch['trk.fitcon']  # track fit consistency
+            trkQual = batch['trkqual.result']  # track fit quality
             fitpdg = batch['trk.pdg']  # track fit consistency
             # compress out unneeded dimensions
             upSegs = segs[:,0] # upstream track fits
@@ -86,8 +96,17 @@ class HistReflections(object):
             dnFitCon = fitcon[:,1]
             upNhits = nhits[:,0]
             dnNhits = nhits[:,1]
+            upTQ = trkQual[:,0]
+            dnTQ = trkQual[:,1]
+            self.HUpFitCon.fill(np.array(upFitCon))
+            self.HDnFitCon.fill(np.array(dnFitCon))
+            self.HUpNHits.fill(np.array(upNhits))
+            self.HDnNHits.fill(np.array(dnNhits))
+            self.HUpTQ.fill(np.array(upTQ))
+            self.HDnTQ.fill(np.array(dnTQ))
+
             # basic consistency test
-            assert((len(upSegs) == len(dnSegs)) & (len(upSegs) == len(upNhits)) & (len(upNhits) == len(dnNhits)) )
+            assert((len(upSegs) == len(dnSegs)) & (len(upSegs) == len(upNhits)) & (len(upNhits) == len(dnNhits)) & (len(upTQ) == len(dnTQ)) & (len(upTQ) == len(upSegs)) )
             # select fits that match PDG code
             upSigPart = (upFitPDG == self.PDG)
             dnSigPart = (dnFitPDG == self.PDG)
@@ -98,8 +117,8 @@ class HistReflections(object):
             # check up and down match
             updownmatch = ak.num(upmom) == ak.num(dnmom)
             # select based on fit quality
-            upGoodFit = (upNhits >= self.MinNHits) & (upFitCon > self.MinFitCon)
-            dnGoodFit = (dnNhits >= self.MinNHits) & (dnFitCon > self.MinFitCon)
+            upGoodFit = (upNhits >= self.MinNHits) & (upFitCon > self.MinFitCon) & (upTQ > self.MinTQ)
+            dnGoodFit = (dnNhits >= self.MinNHits) & (dnFitCon > self.MinFitCon) & (dnTQ > self.MinTQ)
             goodReco = updownmatch & upGoodFit & dnGoodFit & sigPartFit
             NReflect +=  ak.count_nonzero(upNhits)
             NRecoReflect += sum(goodReco)
@@ -178,6 +197,13 @@ class HistReflections(object):
 
     def Write(self,savefile):
         with h5py.File(savefile, 'w') as hdf5file:
+            self.HUpNHits.save(hdf5file)
+            self.HDnNHits.save(hdf5file)
+            self.HUpFitCon.save(hdf5file)
+            self.HDnFitCon.save(hdf5file)
+            self.HUpTQ.save(hdf5file)
+            self.HDnTQ.save(hdf5file)
+
             self.HNST.save(hdf5file)
             self.HNSTTgt.save(hdf5file)
             self.HNIPA.save(hdf5file)

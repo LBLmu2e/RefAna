@@ -14,6 +14,7 @@ import SurfaceIds as SID
 import MyHist
 import h5py
 from scipy.stats import crystalball
+from scipy.signal import convolve as convo
 import copy
 
 # Linearly interpolate/extrapolate a function sampled on an evenly-spaced set of values for a give value
@@ -40,13 +41,14 @@ def fxn_CrystalBall(x, amp, beta, m, loc, scale):
     return amp*crystalball.pdf(x,*pars)
 
 def fxn_ConvCrystalBall(x, amp, beta, m, loc, scale):
-    momstep =0.010 # 10 KeV step
+    momstep =0.01 # 10 KeV step
     lowmom = -10.0
     himom = 10.0
     xvals = np.arange(lowmom,himom,momstep)
     pars = np.array([beta, m, loc, scale])
     yvals = list(map(lambda x: crystalball.pdf(x,*pars),xvals))
-    conv = np.convolve(yvals,yvals,mode="same")
+#    conv = scipy.convolve(yvals,yvals,mode="same",method="direct")
+    conv = convo(yvals,yvals,mode="same",method="direct")
     ibin = np.floor((x-lowmom)/momstep).astype(np.int64)
     xbin = lowmom+ibin*momstep
     return amp*(conv[ibin] + (conv[ibin+1]-conv[ibin])*(x-xbin)/momstep)
@@ -99,7 +101,7 @@ class FitReflections(object):
         conv.legend(loc="upper right")
         noconv.legend(loc="upper right")
 
-    def TestCrystalBall(self,beta_0=1.5,m_0=3.0,loc_0=1.0,scale_0=0.5):
+    def TestCrystalBall(self,beta_0=1.0,m_0=3.0,loc_0=-0.5,scale_0=0.3):
         dmomerr = self.HDeltaNoMatMom.binErrors()
         dmommid = self.HDeltaNoMatMom.binCenters()
         dmomsum = self.HDeltaNoMatMom.integral()
@@ -107,14 +109,39 @@ class FitReflections(object):
         # initialize the fit parameters
         amp_0 = dmomsum*binsize # initial amplitude
         p0 = np.array([amp_0,beta_0, m_0, loc_0, scale_0]) # initial parameters
-        fig, (noconv,conv) = plt.subplots(1,2,layout='constrained', figsize=(10,5))
-        noconv.plot(dmommid, fxn_CrystalBall(dmommid, *p0), 'r-',label="Direct")
-        conv.plot(dmommid, fxn_ConvCrystalBall(dmommid, *p0), 'r-',label="Convolved")
-        conv.legend(loc="upper right")
-        noconv.legend(loc="upper right")
-        fig.text(0.1, 0.5, f"$\\beta$ = {p0[1]:.3f}")
-        fig.text(0.1, 0.4, f"m = {p0[2]:.3f}")
-        fig.text(0.1, 0.3,  f"loc = {p0[3]:.3f}")
+        fig, (anoconv,aconv,afit) = plt.subplots(1,3,layout='constrained', figsize=(15,5))
+        anoconv.plot(dmommid, fxn_CrystalBall(dmommid, *p0), 'r-',label="CB Function")
+        aconv.plot(dmommid, fxn_ConvCrystalBall(dmommid, *p0), 'r-',label="Convolved CB Function")
+        aconv.legend(loc="upper right")
+        anoconv.legend(loc="upper right")
+        fig.text(0.1, 0.8, f"$\\beta$ = {p0[1]:.3f}")
+        fig.text(0.1, 0.7, f"m = {p0[2]:.3f}")
+        fig.text(0.1, 0.6,  f"loc = {p0[3]:.3f}")
+        fig.text(0.1, 0.5,  f"scale = {p0[4]:.3f}")
+        # test fitting: first generate a convolved distribution
+        r1 = crystalball.rvs(beta=beta_0,m=m_0, loc=loc_0, scale=scale_0, random_state=0, size=10000)
+        r2 = crystalball.rvs(beta=beta_0,m=m_0, loc=loc_0, scale=scale_0, random_state=1, size=10000)
+        rconv = r1+r2
+        convhist = MyHist.MyHist(name="convhist",label="Manually Convolved CB",bins=200,range=[-10.0,5],xlabel="$\\Delta$ Momentum")
+        convhist.fill(rconv)
+        convhist.plot(afit)
+        # then fit
+        dmomerr = convhist.binErrors()
+        dmommid = convhist.binCenters()
+        dmomsum = convhist.integral()
+        binsize = convhist.edges[1]- convhist.edges[0]
+        amp_0 = dmomsum*binsize # initial amplitude
+        p0 = np.array([amp_0, beta_0, m_0, loc_0, scale_0]) # initial parameters
+        refpartest, refcovtest = curve_fit(fxn_ConvCrystalBall, dmommid, convhist.data, p0, sigma=dmomerr)
+        refperrtest = np.sqrt(np.diagonal(refcovtest))
+#        convhist.plotErrors(afit)
+        maxval = np.amax(convhist.data)
+        afit.plot(dmommid, fxn_ConvCrystalBall(dmommid, *refpartest), 'r-',label="Convolved CB Fit")
+        afit.legend(loc="upper right")
+        afit.text(-8, 0.8*maxval, f"$\\beta$ = {refpartest[1]:.3f} $\\pm$ {refperrtest[1]:.3f}")
+        afit.text(-8, 0.7*maxval, f"m = {refpartest[2]:.3f} $\\pm$ {refperrtest[2]:.3f}")
+        afit.text(-8, 0.6*maxval,  f"loc = {refpartest[3]:.3f} $\\pm$ {refperrtest[3]:.3f}")
+        afit.text(-8, 0.5*maxval,  f"scale = {refpartest[4]:.3f} $\\pm$ {refperrtest[4]:.3f}")
 
     def FitCrystalBall(self):
         fig, (delmom,delselmom) = plt.subplots(1,2,layout='constrained', figsize=(10,5))
