@@ -6,6 +6,13 @@ import MyHist
 import h5py
 class PlotReflections(object):
     def __init__(self,savefile):
+        self.HUpTQ = MyHist.MyHist(name="HUpTQ",label="Up TrkQual",file=savefile)
+        self.HDnTQ = MyHist.MyHist(name="HDnTQ",label="Down TrkQual",file=savefile)
+        self.HUpFitCon = MyHist.MyHist(name="HUpFitCon",label="Up FitCon",file=savefile)
+        self.HDnFitCon = MyHist.MyHist(name="HDnFitCon",label="Down FitCon",file=savefile)
+        self.HUpNHits = MyHist.MyHist(name="HUpNHits",label="Up NActive",file=savefile)
+        self.HDnNHits = MyHist.MyHist(name="HDnNHits",label="Down NActive",file=savefile)
+
         self.HNST = MyHist.MyHist(name="NInter",label="All ST",file=savefile)
         self.HNIPA = MyHist.MyHist(name="NInter",label="All IPA",file=savefile)
         self.HNSTTgt = MyHist.MyHist(name="NInter",label="Target ST",file=savefile)
@@ -25,6 +32,18 @@ class PlotReflections(object):
         self.HDeltaNoTgtMom = MyHist.MyHist(name="DeltaMom",label="No Target",file=savefile)
         self.HDeltaNoIPAMom = MyHist.MyHist(name="DeltaMom",label="No IPA",file=savefile)
         self.HDeltaNoMatMom = MyHist.MyHist(name="DeltaMom",label="No Mat",file=savefile)
+
+    def PlotQuality(self):
+        fig, (anhit,afc,atq) = plt.subplots(1,3,layout='constrained', figsize=(15,5))
+        upnhit = self.HUpNHits.plot(anhit)
+        dnnhit = self.HDnNHits.plot(anhit)
+        anhit.legend(loc="upper right")
+        upfc = self.HUpFitCon.plot(afc)
+        dnfc = self.HDnFitCon.plot(afc)
+        afc.legend(loc="upper right")
+        uptq = self.HUpTQ.plot(atq)
+        dntq = self.HDnTQ.plot(atq)
+        atq.legend(loc="upper right")
 
     def PlotIntersections(self):
         fig, (cmat,cselmat) = plt.subplots(1,2,layout='constrained', figsize=(15,5))

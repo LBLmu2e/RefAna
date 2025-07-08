@@ -30,10 +30,11 @@ def TargetFoil(tgtz):
 
 
 class HistCe(object):
-    def __init__(self,momrange,minNHits,minFitCon):
+    def __init__(self,momrange,minNHits,minFitCon,minTrkQual):
         self.MomRange = momrange
         self.minNHits = minNHits
         self.minFitCon = minFitCon
+        self.minTrkQual = minTrkQual
 
 
         nDeltaMomBins = 200
@@ -93,31 +94,38 @@ class HistCe(object):
             segs = batch['trksegs'] # track fit samples
             nhits = batch['trk.nactive']  # track N hits
             fitcon = batch['trk.fitcon']  # track fit consistency
+            trkQual = batch['trkqual.result']  # track fit quality
             trkMC = batch['trkmcsim']  # MC genealogy of particles
             segsMC = batch['trksegsmc'] # SurfaceStep infor for true primary particle
             # should be 1 track/event
             assert(ak.sum(ak.count_nonzero(nhits,axis=1)!=1) == 0)
             Segs = segs[:,0]
             FitCon = fitcon[:,0]
-            Nhits = nhits[:,0]
-            goodFit = (Nhits >= self.minNHits) & (FitCon > self.minFitCon)
-            TSDASeg = Segs[Segs.sid == SID.TSDA() ]
-            noTSDA = ak.num(TSDASeg)==0
-            # now MC
+            NHits = nhits[:,0]
+            TrkQual = trkQual[:,0]
+                        # now MC
             SegsMC = segsMC[:,0] # segments (of 1st MC match) of 1st track
             TrkMC = trkMC[:,0,0] # primary MC match of 1st track
             # basic consistency test
-            assert((len(runnum) == len( Segs)) & (len(Segs) == len(SegsMC)) & (len(Segs) == len(TrkMC)) & (len(Nhits) == len(Segs)))
+            assert((len(runnum) == len( Segs)) & (len(Segs) == len(SegsMC)) & (len(Segs) == len(TrkMC)) & (len(NHits) == len(Segs)))
             goodMC = (TrkMC.pdg == elPDG) & (TrkMC.trkrel._rel == 0)
             OMom = TrkMC[goodMC].mom.magnitude()
             goodMC = goodMC & (OMom>self.MomRange[0]) & (OMom < self.MomRange[1])
             OMom = OMom[goodMC]
+
+            SegsMC = SegsMC[goodMC]
+            Segs = Segs[goodMC]
+            NHits = NHits[goodMC]
+            FitCon = FitCon[goodMC]
+            TrkQual = TrkQual[goodMC]
+            goodFit = (NHits >= self.minNHits) & (FitCon > self.minFitCon) & (TrkQual > self.minTrkQual)
+            TSDASeg = Segs[Segs.sid == SID.TSDA() ]
+            noTSDA = ak.num(TSDASeg)==0
+
             self.HOriginMom.fill(np.array(OMom))
             self.HOriginRho.fill(np.array(TrkMC[goodMC].pos.rho()))
             self.HOriginCosT.fill(np.array(TrkMC[goodMC].mom.cosTheta()))
             self.HOriginFoil.fill(np.array(list(map(TargetFoil,TrkMC[goodMC].pos.z()))))
-            SegsMC = SegsMC[goodMC]
-            Segs = Segs[goodMC]
             # sample the fits at the specified
             for isid in range(len(self.TrackerSIDs)) :
                 sid = self.TrackerSIDs[isid]
