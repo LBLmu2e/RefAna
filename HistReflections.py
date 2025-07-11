@@ -35,10 +35,12 @@ class HistReflections(object):
         self.HDnFitCon = MyHist.MyHist(name="HDnFitCon",bins=100,range=[0.0,1.0],label="Down FitCon",title="Fit Consistency",xlabel="")
         self.HUpNHits = MyHist.MyHist(name="HUpNHits",bins=100,range=[0.5,100.5],label="Up NActive",title="Fit N Hits",xlabel="N Hits")
         self.HDnNHits = MyHist.MyHist(name="HDnNHits",bins=100,range=[0.5,100.5],label="Down NActive",title="Fit N Hits",xlabel="N Hits")
+        self.NUpHits = []
+        self.NDnHits = []
 
         # intersection histograms
-        nNMatBins = 20
-        NMatRange = [-0.5,19.5]
+        nNMatBins = 15
+        NMatRange = [-0.5,14.5]
         self.HNST = MyHist.MyHist(bins=nNMatBins,range=NMatRange,name="NInter",label="All ST",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
         self.HNIPA = MyHist.MyHist(bins=nNMatBins,range=NMatRange,name="NInter",label="All IPA",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
         self.HNSTTgt = MyHist.MyHist(bins=nNMatBins,range=NMatRange,name="NInter",label="Target ST",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
@@ -49,21 +51,21 @@ class HistReflections(object):
         nDeltaMomBins = 200
         deltamomrange=(-10,5)
         self.HDnMom = MyHist.MyHist(name="DnMom",label="All", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+self.PDGName+" Downstream Momentum at "+self.CompName)
-        self.HDnTgtMom = MyHist.MyHist(name="DnMom",label="Target", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-        self.HDnNoTgtMom = MyHist.MyHist(name="DnMom",label="No Target", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-        self.HDnNoIPAMom = MyHist.MyHist(name="DnMom",label="No IPA", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-        self.HDnNoMatMom = MyHist.MyHist(name="DnMom",label="No Mat", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnTgtMom = MyHist.MyHist(name="DnMom",label="$N_{ST}$>0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnNoTgtMom = MyHist.MyHist(name="DnMom",label="$N_{ST}$==0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnNoIPAMom = MyHist.MyHist(name="DnMom",label="$N_{IPA}$==0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnNoMatMom = MyHist.MyHist(name="DnMom",label="No Material", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
         self.HUpMom = MyHist.MyHist(name="UpMom",label="All", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-        self.HUpTgtMom = MyHist.MyHist(name="UpMom",label="Target", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-        self.HUpNoTgtMom = MyHist.MyHist(name="UpMom",label="No Target", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-        self.HUpNoIPAMom = MyHist.MyHist(name="UpMom",label="No IPA", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-        self.HUpNoMatMom = MyHist.MyHist(name="UpMom",label="No Mat", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+        self.HUpTgtMom = MyHist.MyHist(name="UpMom",label="$N_{ST}$>0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+        self.HUpNoTgtMom = MyHist.MyHist(name="UpMom",label="$N_{ST}$==0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+        self.HUpNoIPAMom = MyHist.MyHist(name="UpMom",label="$N_{IPA}$==0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+        self.HUpNoMatMom = MyHist.MyHist(name="UpMom",label="No Material", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
         # Momentum comparison histograms
         self.HDeltaMom = MyHist.MyHist(name="DeltaMom",label="All", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
-        self.HDeltaTgtMom = MyHist.MyHist(name="DeltaMom",label="Target", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
-        self.HDeltaNoTgtMom = MyHist.MyHist(name="DeltaMom",label="No Target", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
-        self.HDeltaNoIPAMom = MyHist.MyHist(name="DeltaMom",label="No IPA", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
-        self.HDeltaNoMatMom = MyHist.MyHist(name="DeltaMom",label="No Mat", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
+        self.HDeltaTgtMom = MyHist.MyHist(name="DeltaMom",label="$N_{ST}$>0", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
+        self.HDeltaNoTgtMom = MyHist.MyHist(name="DeltaMom",label="$N_{ST}$==0", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
+        self.HDeltaNoIPAMom = MyHist.MyHist(name="DeltaMom",label="$N_{IPA}$==0", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
+        self.HDeltaNoMatMom = MyHist.MyHist(name="DeltaMom",label="No Material", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
 
     def Print(self):
         print("HistReflections, nhits =",self.MinNHits,"Mom Range",self.MomRange,"Comparison at",self.CompName,"PDG",self.PDGName)
@@ -98,12 +100,6 @@ class HistReflections(object):
             dnNhits = nhits[:,1]
             upTQ = trkQual[:,0]
             dnTQ = trkQual[:,1]
-            self.HUpFitCon.fill(np.array(upFitCon))
-            self.HDnFitCon.fill(np.array(dnFitCon))
-            self.HUpNHits.fill(np.array(upNhits))
-            self.HDnNHits.fill(np.array(dnNhits))
-            self.HUpTQ.fill(np.array(upTQ))
-            self.HDnTQ.fill(np.array(dnTQ))
 
             # basic consistency test
             assert((len(upSegs) == len(dnSegs)) & (len(upSegs) == len(upNhits)) & (len(upNhits) == len(dnNhits)) & (len(upTQ) == len(dnTQ)) & (len(upTQ) == len(upSegs)) )
@@ -167,6 +163,17 @@ class HistReflections(object):
             self.HDnTgtMom.fill(dnTgtMom)
             deltaTgtMom = dnTgtMom - upTgtMom
             self.HDeltaTgtMom.fill(deltaTgtMom)
+
+            self.HUpFitCon.fill(np.array(upFitCon[goodTgt]))
+            self.HDnFitCon.fill(np.array(dnFitCon[goodTgt]))
+            self.HUpNHits.fill(np.array(upNhits[goodTgt]))
+            self.HDnNHits.fill(np.array(dnNhits[goodTgt]))
+            self.HUpTQ.fill(np.array(upTQ[goodTgt]))
+            self.HDnTQ.fill(np.array(dnTQ[goodTgt]))
+
+            self.NUpHits.extend(np.array(upNhits[goodTgt]))
+            self.NDnHits.extend(np.array(dnNhits[goodTgt]))
+
             # no target
             goodNoTgt = goodFit & goodMom & notgt
             upNoTgtMom = upMom[goodNoTgt]
@@ -194,6 +201,14 @@ class HistReflections(object):
 
         print()
         print("From", NReflect,"total reflections found", NRecoReflect,"with good quality reco,", NsigPartReflect, "confirmed",self.PDGName,"and",self.HUpTgtMom.integral(), "Target",self.MomRange)
+
+    def Plot(self):
+        fig, (hits) = plt.subplots(1,1,layout='constrained', figsize=(5,5))
+        hist = hits.hist2d(self.NUpHits,self.NDnHits,label="NHits",bins=[100,100],range=[[-0.5,99.5],[-0.5,99.5]],density=True,norm="linear")
+        hits.set_title("Reflection Fit N Hits")
+        hits.set_xlabel("Upstream N Hits")
+        hits.set_ylabel("Downstream N hits")
+
 
     def Write(self,savefile):
         with h5py.File(savefile, 'w') as hdf5file:
