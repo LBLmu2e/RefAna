@@ -77,6 +77,15 @@ class HistCe(object):
         self.HTgtCosTMC = MyHist.MyHist(name="HTgtCosT",bins=100,range=costrange,label="MC",title="Target Momentum Cos($\\Theta$)",xlabel="Cos($\\Theta$)")
         self.HOriginCosT = MyHist.MyHist(name="HTgtCosT",bins=100,range=costrange,label="MC Origin",title="Target Momentum Cos($\\Theta$)",xlabel="Cos($\\Theta$)")
 
+        ### BINS ###
+
+
+        self.HDTgtMomB12 = MyHist.MyHist(name="DMom",label="B12", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B12")
+        self.HDTgtMomB34 = MyHist.MyHist(name="DMom",label="B34", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B34")
+        self.HDTgtMomB56 = MyHist.MyHist(name="DMom",label="B56", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B56")
+        self.HDTgtMomB78 = MyHist.MyHist(name="DMom",label="B78", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B78")
+        self.HDTgtMomB9p = MyHist.MyHist(name="DMom",label="B9p", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B9p")
+
     def Loop(self,files):
         elPDG = 11
 
@@ -110,7 +119,7 @@ class HistCe(object):
             assert((len(runnum) == len( Segs)) & (len(Segs) == len(SegsMC)) & (len(Segs) == len(TrkMC)) & (len(NHits) == len(Segs)))
             goodMC = (TrkMC.pdg == elPDG) & (TrkMC.trkrel._rel == 0)
             OMom = TrkMC[goodMC].mom.magnitude()
-            goodMC = goodMC & (OMom>self.MomRange[0]) & (OMom < self.MomRange[1])
+            #goodMC = goodMC & (OMom>self.MomRange[0]) & (OMom < self.MomRange[1])
             OMom = OMom[goodMC]
 
             SegsMC = SegsMC[goodMC]
@@ -153,12 +162,51 @@ class HistCe(object):
                 self.HTrkRespMom[isid].fill(np.array(momresp))
                 momrefresp = refmom - OMom[reflectable]
                 self.HTrkRefRespMom[isid].fill(np.array(momrefresp))
+
+            # tracker front, binned response
+
+            segs = Segs[(Segs.sid == SID.TT_Front()) & (Segs.mom.z() > 0.0)]
+            mom = segs.mom.magnitude()
+            mom = mom[(mom > self.MomRange[0]) & (mom < self.MomRange[1])]
+            hasmom = ak.count_nonzero(mom,axis=1)==1
+            
             #foil response
             tgtsegs = Segs[(Segs.sid == SID.ST_Foils())]
             tgtmom = tgtsegs.mom.magnitude()
             ntgts = ak.count(tgtmom,axis=1)
             goodtgt = (ntgts > 0)
-            ntgts = ntgts[goodtgt]
+            ntgts = ntgts[hasmom & goodFit & goodMC]
+            
+            DMom = ak.flatten(mom[hasmom & goodFit & goodMC]) - OMom[hasmom & goodFit]
+
+            # bin DMom based on number of foil hits ntgts
+
+            ntgts_np = np.array(ntgts)
+            #print(ntgts_np, len(ntgts_np))
+
+            test_12 = np.logical_or(np.equal(ntgts_np, 1), np.equal(ntgts_np, 2))
+            test_34 = np.logical_or(np.equal(ntgts_np, 3), np.equal(ntgts_np, 4))
+            test_56 = np.logical_or(np.equal(ntgts_np, 5), np.equal(ntgts_np, 6))
+            test_78 = np.logical_or(np.equal(ntgts_np, 7), np.equal(ntgts_np, 8))
+            test_9p = np.greater_equal(ntgts_np, 9)
+            
+            #print(len(test_12))
+            #print(len(DMom))
+
+            B12 = DMom[test_12]
+            B34 = DMom[test_34]
+            B56 = DMom[test_56]
+            B78 = DMom[test_78]
+            B9p = DMom[test_9p]
+
+            print(B12)
+
+            self.HDTgtMomB12.fill(np.array(B12))
+            self.HDTgtMomB34.fill(np.array(B34))
+            self.HDTgtMomB56.fill(np.array(B56))
+            self.HDTgtMomB78.fill(np.array(B78))
+            self.HDTgtMomB9p.fill(np.array(B9p))
+            
 #            avgmom = ak.sum(tgtmom,axis=1)
 #            avgmom = avgmom[goodtgt]
 #            avgmom = avgmom/ntgts
@@ -236,6 +284,15 @@ class HistCe(object):
             self.HTgtCosT.save(hdf5file)
             self.HTgtCosTMC.save(hdf5file)
             self.HOriginCosT.save(hdf5file)
+
+            # save my new histograms
+
+            self.HDTgtMomB12.save(hdf5file)
+            self.HDTgtMomB34.save(hdf5file)
+            self.HDTgtMomB56.save(hdf5file)
+            self.HDTgtMomB78.save(hdf5file)
+            self.HDTgtMomB9p.save(hdf5file)
+
 
 #            fig, (tgtMomResp,momResp[0], momResp[1], momResp[2]) = plt.subplots(1,4,layout='constrained', figsize=(15,5))
 #            tgtMomResp.hist(MomResp[itarget],label="ST", bins=nMomBins, range=momresprange, histtype='step')

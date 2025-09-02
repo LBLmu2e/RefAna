@@ -25,6 +25,11 @@ class PlotReflections(object):
         self.HDeltaNoTgtMom = MyHist.MyHist(name="DeltaMom",label="No Target",file=savefile)
         self.HDeltaNoIPAMom = MyHist.MyHist(name="DeltaMom",label="No IPA",file=savefile)
         self.HDeltaNoMatMom = MyHist.MyHist(name="DeltaMom",label="No Mat",file=savefile)
+        self.HDeltaTgtMomB12 = MyHist.MyHist(name="DeltaMom",label="B12",file=savefile)
+        self.HDeltaTgtMomB34 = MyHist.MyHist(name="DeltaMom",label="B34",file=savefile)
+        self.HDeltaTgtMomB56 = MyHist.MyHist(name="DeltaMom",label="B56",file=savefile)
+        self.HDeltaTgtMomB78 = MyHist.MyHist(name="DeltaMom",label="B78",file=savefile)
+        self.HDeltaTgtMomB9p = MyHist.MyHist(name="DeltaMom",label="B9p",file=savefile)
 
     def PlotIntersections(self):
         fig, (cmat,cselmat) = plt.subplots(1,2,layout='constrained', figsize=(15,5))
@@ -54,4 +59,13 @@ class PlotReflections(object):
         delnotgtmom = self.HDeltaNoTgtMom.plot(deltaMom)
         delnoipamom = self.HDeltaNoIPAMom.plot(deltaMom)
         delnomatmom = self.HDeltaNoMatMom.plot(deltaMom)
+        deltaMom.legend(loc="upper right")
+
+    def PlotBinnedMomentum(self):
+        fig, (deltaMom) = plt.subplots(1,1,layout='constrained', figsize=(15,5))
+        B12 = self.HDeltaTgtMomB12.plot(deltaMom)
+        B34 = self.HDeltaTgtMomB34.plot(deltaMom)
+        B56 = self.HDeltaTgtMomB56.plot(deltaMom)
+        B78 = self.HDeltaTgtMomB78.plot(deltaMom)
+        B9p = self.HDeltaTgtMomB9p.plot(deltaMom)
         deltaMom.legend(loc="upper right")
