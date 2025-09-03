@@ -67,6 +67,24 @@ class HistReflections(object):
         self.HDeltaNoIPAMom = MyHist.MyHist(name="DeltaMom",label="$N_{IPA}$==0", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
         self.HDeltaNoMatMom = MyHist.MyHist(name="DeltaMom",label="No Material", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
 
+        self.HUpTgtMomB12 = MyHist.MyHist(name="UpMom",label="B12", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+        self.HUpTgtMomB34 = MyHist.MyHist(name="UpMom",label="B34", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+        self.HUpTgtMomB56 = MyHist.MyHist(name="UpMom",label="B56", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+        self.HUpTgtMomB78 = MyHist.MyHist(name="UpMom",label="B78", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+        self.HUpTgtMomB9p = MyHist.MyHist(name="UpMom",label="B9p", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+
+        self.HDnTgtMomB12 = MyHist.MyHist(name="DnMom",label="B12", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnTgtMomB34 = MyHist.MyHist(name="DnMom",label="B34", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnTgtMomB56 = MyHist.MyHist(name="DnMom",label="B56", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnTgtMomB78 = MyHist.MyHist(name="DnMom",label="B78", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnTgtMomB9p = MyHist.MyHist(name="DnMom",label="B9p", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+
+        self.HDeltaTgtMomB12 = MyHist.MyHist(name="DeltaMom",label="B12", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
+        self.HDeltaTgtMomB34 = MyHist.MyHist(name="DeltaMom",label="B34", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
+        self.HDeltaTgtMomB56 = MyHist.MyHist(name="DeltaMom",label="B56", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
+        self.HDeltaTgtMomB78 = MyHist.MyHist(name="DeltaMom",label="B78", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
+        self.HDeltaTgtMomB9p = MyHist.MyHist(name="DeltaMom",label="B9p", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
+
     def Print(self):
         print("HistReflections, nhits =",self.MinNHits,"Mom Range",self.MomRange,"Comparison at",self.CompName,"PDG",self.PDGName)
 
@@ -163,7 +181,49 @@ class HistReflections(object):
             self.HDnTgtMom.fill(dnTgtMom)
             deltaTgtMom = dnTgtMom - upTgtMom
             self.HDeltaTgtMom.fill(deltaTgtMom)
+            ### BINNED FITS ###
 
+            B12 = np.logical_or((nfoil == 1), (nfoil == 2))
+            upTgtMomB12 = upMom[B12]
+            dnTgtMomB12 = dnMom[B12]
+            self.HUpTgtMomB12.fill(upTgtMomB12)
+            self.HDnTgtMomB12.fill(dnTgtMomB12)
+            deltaTgtMomB12 = dnTgtMomB12 - upTgtMomB12
+            self.HDeltaTgtMomB12.fill(deltaTgtMomB12)
+            
+            B34 = np.logical_or((nfoil == 3), (nfoil == 4))
+            upTgtMomB34 = upMom[B34]
+            dnTgtMomB34 = dnMom[B34]
+            self.HUpTgtMomB34.fill(upTgtMomB34)
+            self.HDnTgtMomB34.fill(dnTgtMomB34)
+            deltaTgtMomB34 = dnTgtMomB34 - upTgtMomB34
+            self.HDeltaTgtMomB34.fill(deltaTgtMomB34)
+            
+            B56 = np.logical_or((nfoil == 5), (nfoil == 5))
+            upTgtMomB56 = upMom[B56]
+            dnTgtMomB56 = dnMom[B56]
+            self.HUpTgtMomB56.fill(upTgtMomB56)
+            self.HDnTgtMomB56.fill(dnTgtMomB56)
+            deltaTgtMomB56 = dnTgtMomB56 - upTgtMomB56
+            self.HDeltaTgtMomB56.fill(deltaTgtMomB56)
+            
+            B78 = np.logical_or((nfoil == 7), (nfoil == 8))
+            upTgtMomB78 = upMom[B78]
+            dnTgtMomB78 = dnMom[B78]
+            self.HUpTgtMomB78.fill(upTgtMomB78)
+            self.HDnTgtMomB78.fill(dnTgtMomB78)
+            deltaTgtMomB78 = dnTgtMomB78 - upTgtMomB78
+            self.HDeltaTgtMomB78.fill(deltaTgtMomB78)
+            
+            B9p = (nfoil >= 9)
+            upTgtMomB9p = upMom[B9p]
+            dnTgtMomB9p = dnMom[B9p]
+            self.HUpTgtMomB9p.fill(upTgtMomB9p)
+            self.HDnTgtMomB9p.fill(dnTgtMomB9p)
+            deltaTgtMomB9p = dnTgtMomB9p - upTgtMomB9p
+            self.HDeltaTgtMomB9p.fill(deltaTgtMomB9p)
+
+            
             self.HUpFitCon.fill(np.array(upFitCon[goodTgt]))
             self.HDnFitCon.fill(np.array(dnFitCon[goodTgt]))
             self.HUpNHits.fill(np.array(upNhits[goodTgt]))
@@ -238,5 +298,23 @@ class HistReflections(object):
             self.HDeltaNoTgtMom.save(hdf5file)
             self.HDeltaNoIPAMom.save(hdf5file)
             self.HDeltaNoMatMom.save(hdf5file)
+
+            self.HUpTgtMomB12.save(hdf5file)
+            self.HUpTgtMomB34.save(hdf5file)
+            self.HUpTgtMomB56.save(hdf5file)
+            self.HUpTgtMomB78.save(hdf5file)
+            self.HUpTgtMomB9p.save(hdf5file)
+
+            self.HDnTgtMomB12.save(hdf5file)
+            self.HDnTgtMomB34.save(hdf5file)
+            self.HDnTgtMomB56.save(hdf5file)
+            self.HDnTgtMomB78.save(hdf5file)
+            self.HDnTgtMomB9p.save(hdf5file)
+
+            self.HDeltaTgtMomB12.save(hdf5file)
+            self.HDeltaTgtMomB34.save(hdf5file)
+            self.HDeltaTgtMomB56.save(hdf5file)
+            self.HDeltaTgtMomB78.save(hdf5file)
+            self.HDeltaTgtMomB9p.save(hdf5file)
 
 
