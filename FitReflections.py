@@ -73,13 +73,14 @@ def fxn_ConvExpGauss(x, amp, mu, sigma, lamb):
 
 class FitReflections(object):
     def __init__(self,reffile,cefile=None):
-        self.HDeltaNoMatMom = MyHist.MyHist(name="DeltaMom",label="No Mat",file=reffile)
-        self.HDeltaTgtMom = MyHist.MyHist(name="DeltaMom",label="Target",file=reffile)
+
         self.HDeltaTgtMomB12 = MyHist.MyHist(name="DeltaMom",label="B12",file=reffile)
         self.HDeltaTgtMomB34 = MyHist.MyHist(name="DeltaMom",label="B34",file=reffile)
         self.HDeltaTgtMomB56 = MyHist.MyHist(name="DeltaMom",label="B56",file=reffile)
         self.HDeltaTgtMomB78 = MyHist.MyHist(name="DeltaMom",label="B78",file=reffile)
         self.HDeltaTgtMomB9p = MyHist.MyHist(name="DeltaMom",label="B9p",file=reffile)
+        self.HDeltaNoMatMom = MyHist.MyHist(name="DeltaMom",label="No Material",file=reffile)
+        self.HDeltaTgtMom = MyHist.MyHist(name="DeltaMom",label="$N_{ST}$>0",file=reffile)
         self.HDeltaNoMatMom.title = "Reflected " + self.HDeltaNoMatMom.title
         self.HDeltaTgtMom.title = "Reflected " + self.HDeltaTgtMom.title
         self.HDeltaTgtMomB12.title = "Reflected " + self.HDeltaTgtMomB12.title
@@ -89,10 +90,13 @@ class FitReflections(object):
         self.HDeltaTgtMomB9p.title = "Reflected " + self.HDeltaTgtMomB9p.title
         self.hasCe = ( cefile != None)
         if self.hasCe:
-            self.HCeRefResp = MyHist.MyHist(name="TT_FrontResponse",label="Reflectable",file=cefile)
-            self.HCeAllResp = MyHist.MyHist(name="TT_FrontResponse",label="All",file=cefile)
-            self.HCeRefResp.title="Ce "+ self.HCeRefResp.title
-            self.HCeAllResp.title="Ce "+ self.HCeAllResp.title
+            loc = SID.SurfaceName(SID.TT_Front())
+            self.HTrkRefRespMom = MyHist.MyHist(name=loc+"Response",label="Reflectable",file=cefile)
+            self.HTrkRefRespMom.title = "Ce " + self.HTrkRefRespMom.title
+            self.HTrkRefRespMom.label = "$N_{TSDA}$==0"
+            self.HTrkResoMom = MyHist.MyHist(name=loc+"Resolution",label="",file=cefile)
+            self.HTrkResoMom.title = "Ce " + self.HTrkResoMom.title
+            self.HTrkResoMom.label = "$N_{TSDA}$==0"
 
             ### BINNED ###
             self.HCeTgtMomB12 = MyHist.MyHist(name="DMom",label="B12", file=cefile)
@@ -388,7 +392,7 @@ class FitReflections(object):
 
         self.HDeltaNoMatMom.plotErrors(delmom)
         maxval = np.amax(self.HDeltaNoMatMom.data)
-        delmom.plot(dmommid, fxn_ConvCrystalBall(dmommid, *refparnomat), 'r-',label="Fit")
+        delmom.plot(dmommid, fxn_ConvCrystalBall(dmommid, *refparnomat), 'r-',label="Conv. CB Fit")
         delmom.legend(loc="upper right")
         delmom.text(-8, 0.8*maxval, f"$\\beta$ = {refparnomat[1]:.3f} $\\pm$ {refperrnomat[1]:.3f}")
         delmom.text(-8, 0.7*maxval, f"m = {refparnomat[2]:.3f} $\\pm$ {refperrnomat[2]:.3f}")
@@ -414,7 +418,7 @@ class FitReflections(object):
 
         self.HDeltaTgtMom.plotErrors(delselmom)
         maxval = np.amax(self.HDeltaTgtMom.data)
-        delselmom.plot(dmommid, fxn_ConvCrystalBall(dmommid, *refpartgt), 'r-',label="Fit")
+        delselmom.plot(dmommid, fxn_ConvCrystalBall(dmommid, *refpartgt), 'r-',label="Conv. CB Fit")
         delselmom.legend(loc="upper right")
         delselmom.text(-8, 0.8*maxval, f"$\\beta$ = {refpartgt[1]:.3f} $\\pm$ {refperrtgt[1]:.3f}")
         delselmom.text(-8, 0.7*maxval, f"m = {refpartgt[2]:.3f} $\\pm$ {refperrtgt[2]:.3f}")
@@ -566,77 +570,70 @@ class FitReflections(object):
         delmomB9p.text(-8, 0.5*maxval9p,  f"scale = {refparnomat9p[4]:.3f} $\\pm$ {refperrnomat9p[4]:.3f}")               
 
         if self.hasCe:
-            fig, (cefitrefresp,cecomprefresp) = plt.subplots(1,2,layout='constrained', figsize=(15,5))
+            fig, (cefitreso,cefitresp) = plt.subplots(1,2,layout='constrained', figsize=(15,5))
             # fit to un-convolved Crystal Ball
             # initialize the fit parameters
-            cebins = self.HCeRefResp.binCenters()
-            ceint = self.HCeRefResp.integral()
-            cebinsize = self.HCeRefResp.edges[1]- self.HCeRefResp.edges[0]
-            loc_0 = np.mean(cebins*self.HCeRefResp.data/ceint) # initial mean
+            resobins = self.HTrkResoMom.binCenters()
+            resoint = self.HTrkResoMom.integral()
+            resobinsize = self.HTrkResoMom.edges[1]- self.HTrkResoMom.edges[0]
+            loc_0 = np.mean(resobins*self.HTrkResoMom.data/resoint) # initial mean
             beta_0 = 1.0
             m_0 = 3.0
             scale_0 = 0.20
-            amp_0 = ceint*cebinsize # initial amplitude
+            amp_0 = resoint*resobinsize # initial amplitude
             p0 = np.array([amp_0, beta_0, m_0, loc_0, scale_0]) # initial parameters
-            # fit, returing optimum parameters and covariance
-            cepars, cecov = curve_fit(fxn_CrystalBall, cebins, self.HCeRefResp.data, p0, sigma=dmomerr)
-            print("All fit parameters",cepars)
-            print("All fit covariance",cecov)
-            ceperr = np.sqrt(np.diagonal(cecov))
-            self.HCeRefResp.plotErrors(cefitrefresp)
-            maxval = np.amax(self.HCeRefResp.data)
-            cefitrefresp.plot(cebins, fxn_CrystalBall(cebins, *cepars), 'r-',label="Fit")
-            cefitrefresp.legend(loc="upper right")
-            cefitrefresp.text(-8, 0.8*maxval, f"$\\beta$ = {cepars[1]:.3f} $\\pm$ {ceperr[1]:.3f}")
-            cefitrefresp.text(-8, 0.7*maxval, f"m = {cepars[2]:.3f} $\\pm$ {ceperr[2]:.3f}")
-            cefitrefresp.text(-8, 0.6*maxval,  f"loc = {cepars[3]:.3f} $\\pm$ {ceperr[3]:.3f}")
-            cefitrefresp.text(-8, 0.5*maxval,  f"scale = {cepars[4]:.3f} $\\pm$ {ceperr[4]:.3f}")
-            # Plot overlay with the reflection fit results. Adjust the amplitude
-            self.HCeRefResp.plotErrors(cecomprefresp)
-            comppars = copy.deepcopy(refpartgt)
-            comppars[0] = cepars[0] # steal normalization from fit
-            cecomprefresp.plot(cebins, fxn_CrystalBall(cebins, *comppars), 'r-',label="Comparison")
-            cecomprefresp.legend(loc="upper right")
-            cecomprefresp.text(-8, 0.8*maxval, f"$\\beta$ = {comppars[1]:.3f} $\\pm$ {refperrtgt[1]:.3f}")
-            cecomprefresp.text(-8, 0.7*maxval, f"m = {comppars[2]:.3f} $\\pm$ {refperrtgt[2]:.3f}")
-            cecomprefresp.text(-8, 0.6*maxval,  f"loc = {comppars[3]:.3f} $\\pm$ {refperrtgt[3]:.3f}")
-            cecomprefresp.text(-8, 0.5*maxval,  f"scale = {comppars[4]:.3f} $\\pm$ {refperrtgt[4]:.3f}")
+            # fit Ce resolution
+            resofitpars, resofitcov = curve_fit(fxn_CrystalBall, resobins, self.HTrkResoMom.data, p0, sigma=dmomerr)
+            resoperr = np.sqrt(np.diagonal(resofitcov))
+            self.HTrkResoMom.plotErrors(cefitreso)
+            maxval = np.amax(self.HTrkResoMom.data)
+            cefitreso.plot(resobins, fxn_CrystalBall(resobins, *resofitpars), 'r-',label="CB Fit")
+            cefitreso.text(-2, 0.8*maxval, f"$\\beta$ = {resofitpars[1]:.3f} $\\pm$ {resoperr[1]:.3f}")
+            cefitreso.text(-2, 0.7*maxval, f"m = {resofitpars[2]:.3f} $\\pm$ {resoperr[2]:.3f}")
+            cefitreso.text(-2, 0.6*maxval,  f"loc = {resofitpars[3]:.3f} $\\pm$ {resoperr[3]:.3f}")
+            cefitreso.text(-2, 0.5*maxval,  f"scale = {resofitpars[4]:.3f} $\\pm$ {resoperr[4]:.3f}")
+            cefitreso.legend(loc="upper right")
+            # fit Ce response
+            respbins = self.HTrkRefRespMom.binCenters()
+            respint = self.HTrkRefRespMom.integral()
+            respbinsize = self.HTrkRefRespMom.edges[1]- self.HTrkRefRespMom.edges[0]
+            amp_0 = respint*respbinsize # initial amplitude
+            p0 = np.array([amp_0, beta_0, m_0, loc_0, scale_0])
+            respfitpars, respfitcov = curve_fit(fxn_CrystalBall, respbins, self.HTrkRefRespMom.data, p0, sigma=dmomerr)
+            respperr = np.sqrt(np.diagonal(respfitcov))
+            self.HTrkRefRespMom.plotErrors(cefitresp)
+            maxval = np.amax(self.HTrkRefRespMom.data)
+            cefitresp.plot(respbins, fxn_CrystalBall(respbins, *respfitpars), 'r-',label="CB Fit")
+            cefitresp.text(-8, 0.8*maxval, f"$\\beta$ = {respfitpars[1]:.3f} $\\pm$ {respperr[1]:.3f}")
+            cefitresp.text(-8, 0.7*maxval, f"m = {respfitpars[2]:.3f} $\\pm$ {respperr[2]:.3f}")
+            cefitresp.text(-8, 0.6*maxval,  f"loc = {respfitpars[3]:.3f} $\\pm$ {respperr[3]:.3f}")
+            cefitresp.text(-8, 0.5*maxval,  f"scale = {respfitpars[4]:.3f} $\\pm$ {respperr[4]:.3f}")
+            cefitresp.legend(loc="upper right")
 
-            fig, (cefitallresp,cecompallresp) = plt.subplots(1,2,layout='constrained', figsize=(15,5))
-            # fit to un-convolved Crystal Ball
-            # initialize the fit parameters
-            cebins = self.HCeAllResp.binCenters()
-            ceint = self.HCeAllResp.integral()
-            cebinsize = self.HCeAllResp.edges[1]- self.HCeAllResp.edges[0]
-            loc_0 = np.mean(cebins*self.HCeAllResp.data/ceint) # initial mean
-            beta_0 = 1.0
-            m_0 = 3.0
-            scale_0 = 0.20
-            amp_0 = ceint*cebinsize # initial amplitude
-            p0 = np.array([amp_0, beta_0, m_0, loc_0, scale_0]) # initial parameters
-            # fit, returing optimum parameters and covariance
-            cepars, cecov = curve_fit(fxn_CrystalBall, cebins, self.HCeAllResp.data, p0, sigma=dmomerr)
-            print("All fit parameters",cepars)
-            print("All fit covariance",cecov)
-            ceperr = np.sqrt(np.diagonal(cecov))
-            self.HCeAllResp.plotErrors(cefitallresp)
-            maxval = np.amax(self.HCeAllResp.data)
-            cefitallresp.plot(cebins, fxn_CrystalBall(cebins, *cepars), 'r-',label="Fit")
-            cefitallresp.legend(loc="upper right")
-            cefitallresp.text(-8, 0.8*maxval, f"$\\beta$ = {cepars[1]:.3f} $\\pm$ {ceperr[1]:.3f}")
-            cefitallresp.text(-8, 0.7*maxval, f"m = {cepars[2]:.3f} $\\pm$ {ceperr[2]:.3f}")
-            cefitallresp.text(-8, 0.6*maxval,  f"loc = {cepars[3]:.3f} $\\pm$ {ceperr[3]:.3f}")
-            cefitallresp.text(-8, 0.5*maxval,  f"scale = {cepars[4]:.3f} $\\pm$ {ceperr[4]:.3f}")
             # Plot overlay with the reflection fit results. Adjust the amplitude
-            self.HCeAllResp.plotErrors(cecompallresp)
-            comppars = copy.deepcopy(refpartgt)
-            comppars[0] = cepars[0] # steal normalization from fit
-            cecompallresp.plot(cebins, fxn_CrystalBall(cebins, *comppars), 'r-',label="Comparison")
-            cecompallresp.legend(loc="upper right")
-            cecompallresp.text(-8, 0.8*maxval, f"$\\beta$ = {comppars[1]:.3f} $\\pm$ {refperrtgt[1]:.3f}")
-            cecompallresp.text(-8, 0.7*maxval, f"m = {comppars[2]:.3f} $\\pm$ {refperrtgt[2]:.3f}")
-            cecompallresp.text(-8, 0.6*maxval,  f"loc = {comppars[3]:.3f} $\\pm$ {refperrtgt[3]:.3f}")
-            cecompallresp.text(-8, 0.5*maxval,  f"scale = {comppars[4]:.3f} $\\pm$ {refperrtgt[4]:.3f}")
+            fig, (cecompreso,cecompresp) = plt.subplots(1,2,layout='constrained', figsize=(15,5))
+
+            self.HTrkResoMom.plotErrors(cecompreso)
+            resocomppars = copy.deepcopy(refparnomat)
+            resocomppars[0] = resofitpars[0] # steal normalization from fit
+            maxval = np.amax(self.HTrkResoMom.data)
+            cecompreso.plot(resobins, fxn_CrystalBall(resobins, *resocomppars), 'r-',label="Deconv. Ref. CB")
+            cecompreso.text(-2, 0.8*maxval, f"$\\beta$ = {resocomppars[1]:.3f} $\\pm$ {refperrnomat[1]:.3f}")
+            cecompreso.text(-2, 0.7*maxval, f"m = {resocomppars[2]:.3f} $\\pm$ {refperrnomat[2]:.3f}")
+            cecompreso.text(-2, 0.6*maxval,  f"loc = {resocomppars[3]:.3f} $\\pm$ {refperrnomat[3]:.3f}")
+            cecompreso.text(-2, 0.5*maxval,  f"scale = {resocomppars[4]:.3f} $\\pm$ {refperrnomat[4]:.3f}")
+            cecompreso.legend(loc="upper right")
+
+            self.HTrkRefRespMom.plotErrors(cecompresp)
+            respcomppars = copy.deepcopy(refpartgt)
+            respcomppars[0] = respfitpars[0] # steal normalization from fit
+            cecompresp.plot(respbins, fxn_CrystalBall(respbins, *respcomppars), 'r-',label="Deconv. Ref. CB")
+            maxval = np.amax(self.HTrkRefRespMom.data)
+            cecompresp.text(-8, 0.8*maxval, f"$\\beta$ = {respcomppars[1]:.3f} $\\pm$ {refperrtgt[1]:.3f}")
+            cecompresp.text(-8, 0.7*maxval, f"m = {respcomppars[2]:.3f} $\\pm$ {refperrtgt[2]:.3f}")
+            cecompresp.text(-8, 0.6*maxval,  f"loc = {respcomppars[3]:.3f} $\\pm$ {refperrtgt[3]:.3f}")
+            cecompresp.text(-8, 0.5*maxval,  f"scale = {respcomppars[4]:.3f} $\\pm$ {refperrtgt[4]:.3f}")
+            cecompresp.legend(loc="upper right")
 
             ### BINNED ### 
 
