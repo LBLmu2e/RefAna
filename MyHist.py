@@ -47,11 +47,30 @@ class MyHist(object):
     def integral(self):
         return np.sum(self.data)
 
+    def maxVal(self):
+        return np.max(self.data)
+
+    # bin range for bins with values above the given value
+    def binRange(self,minval):
+        istart=0
+        while((istart < len(self.data)) & (self.data[istart]<minval)):
+            istart += 1
+        iend=len(self.data)-1
+        while((iend > 0) & (self.data[iend]<minval)):
+            iend -= 1
+        return [istart,iend]
+
     def binCenters(self):
         midbin = np.zeros(len(self.data))
         for ibin in range(len(self.data)):
             midbin[ibin] = 0.5*(self.edges[ibin] + self.edges[ibin+1]) # edges have 1 more entry than data
         return midbin
+
+    def binWidth(self,ibin=0):
+        return self.edges[ibin+1]-self.edges[ibin]
+
+    def average(self):
+        return np.average(self.binCenters(),weights=self.data)
 
     def binErrors(self):
         # assume unweighted bins
