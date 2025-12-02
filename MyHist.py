@@ -1,5 +1,7 @@
 import numpy as np
 import h5py
+import math
+
 class MyHist(object):
     def __init__(self,name,label,title="",xlabel="",bins=100,range=[],file=""):
         self.name = name
@@ -50,6 +52,10 @@ class MyHist(object):
     def maxVal(self):
         return np.max(self.data)
 
+    def maxX(self):
+        maxindex = np.argmax(self.data)
+        return 0.5*(self.edges[maxindex]+self.edges[maxindex+1])
+
     # bin range for bins with values above the given value
     def binRange(self,minval):
         istart=0
@@ -69,8 +75,33 @@ class MyHist(object):
     def binWidth(self,ibin=0):
         return self.edges[ibin+1]-self.edges[ibin]
 
-    def average(self):
+    def mean(self):
         return np.average(self.binCenters(),weights=self.data)
+
+    def variance(self):
+        mean = self.mean()
+        return np.average(np.square(self.binCenters()-mean),weights=self.data)
+
+    def RMS(self):
+        return math.sqrt(self.variance())
+
+    def FWHM(self):
+        maxindex = np.argmax(self.data)
+        halfmax = 0.5*self.data[maxindex]
+        binval = self.data[maxindex]
+        ilow = maxindex
+        while((ilow >= 0) & (self.data[ilow] > halfmax) ):
+            ilow -= 1
+        ilow += 1
+        ihigh = maxindex
+        while( (ihigh < len(self.data)) & (self.data[ihigh] > halfmax) ):
+            ihigh += 1
+        # this is intentionally one higher than ilow, as bin edges are at the lower edge
+        fwhm = self.edges[ihigh]-self.edges[ilow]
+        # Interpolate to the actual value
+#        fwhm += (self.data[ilow]-halfmax)*self.binWidth()/(self.data[ilow+1]-self.data[ilow])
+#        fwhm += (self.data[ihigh]-halfmax)*self.binWidth()/(self.data[ihigh]-self.data[ihigh+1])
+        return fwhm
 
     def binErrors(self):
         # assume unweighted bins
