@@ -12,7 +12,7 @@ import math
 from scipy import special
 import SurfaceIds as SID
 
-class RefResp(object):
+class RefCheck(object):
     def __init__(self,sid):
         self.SID = sid
 
