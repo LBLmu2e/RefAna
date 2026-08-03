@@ -120,7 +120,7 @@ class HistCe(object):
             goodMC = (TrkMC.pdg == elPDG) & (TrkMC.trkrel._rel == 0)
             OMom = TrkMC[goodMC].mom.magnitude()
             #goodMC = goodMC & (OMom>self.MomRange[0]) & (OMom < self.MomRange[1])
-            OMom = OMom[goodMC]
+            #OMom = OMom[goodMC]
 
             SegsMC = SegsMC[goodMC]
             Segs = Segs[goodMC]
@@ -169,14 +169,15 @@ class HistCe(object):
             mom = segs.mom.magnitude()
             mom = mom[(mom > self.MomRange[0]) & (mom < self.MomRange[1])]
             hasmom = ak.count_nonzero(mom,axis=1)==1
-            
+
             #foil response
             tgtsegs = Segs[(Segs.sid == SID.ST_Foils())]
             tgtmom = tgtsegs.mom.magnitude()
             ntgts = ak.count(tgtmom,axis=1)
             goodtgt = (ntgts > 0)
+            print(len(hasmom),len(goodFit),len(goodMC))
             ntgts = ntgts[hasmom & goodFit & goodMC]
-            
+
             DMom = ak.flatten(mom[hasmom & goodFit & goodMC]) - OMom[hasmom & goodFit]
 
             # bin DMom based on number of foil hits ntgts
@@ -189,7 +190,7 @@ class HistCe(object):
             test_56 = np.logical_or(np.equal(ntgts_np, 5), np.equal(ntgts_np, 6))
             test_78 = np.logical_or(np.equal(ntgts_np, 7), np.equal(ntgts_np, 8))
             test_9p = np.greater_equal(ntgts_np, 9)
-            
+
             #print(len(test_12))
             #print(len(DMom))
 
@@ -206,7 +207,7 @@ class HistCe(object):
             self.HDTgtMomB56.fill(np.array(B56))
             self.HDTgtMomB78.fill(np.array(B78))
             self.HDTgtMomB9p.fill(np.array(B9p))
-            
+
 #            avgmom = ak.sum(tgtmom,axis=1)
 #            avgmom = avgmom[goodtgt]
 #            avgmom = avgmom/ntgts

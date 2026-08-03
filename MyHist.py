@@ -64,6 +64,7 @@ class MyHist(object):
         iend=len(self.data)-1
         while((iend > 0) & (self.data[iend]<minval)):
             iend -= 1
+        iend += 1
         return [istart,iend]
 
     def binCenters(self):
@@ -86,21 +87,10 @@ class MyHist(object):
         return math.sqrt(self.variance())
 
     def FWHM(self):
-        maxindex = np.argmax(self.data)
-        halfmax = 0.5*self.data[maxindex]
-        binval = self.data[maxindex]
-        ilow = maxindex
-        while((ilow >= 0) & (self.data[ilow] > halfmax) ):
-            ilow -= 1
-        ilow += 1
-        ihigh = maxindex
-        while( (ihigh < len(self.data)) & (self.data[ihigh] > halfmax) ):
-            ihigh += 1
+        halfmax = 0.5*self.maxVal()
+        [ilow,ihigh] = self.binRange(halfmax)
         # this is intentionally one higher than ilow, as bin edges are at the lower edge
         fwhm = self.edges[ihigh]-self.edges[ilow]
-        # Interpolate to the actual value
-#        fwhm += (self.data[ilow]-halfmax)*self.binWidth()/(self.data[ilow+1]-self.data[ilow])
-#        fwhm += (self.data[ihigh]-halfmax)*self.binWidth()/(self.data[ihigh]-self.data[ihigh+1])
         return fwhm
 
     def binErrors(self):
@@ -109,6 +99,20 @@ class MyHist(object):
         ones = np.ones(len(self.data))
         errors = np.maximum(ones,errors)
         return errors
+
+    def fitArrays(self,brange=[0,-1]):
+        if (brange[1] < 0):
+            brange[1] = len(self.data)
+        binmid = np.zeros(brange[1]-brange[0])
+        binval = np.zeros(brange[1]-brange[0])
+        binerr = np.zeros(brange[1]-brange[0])
+        jbin = 0
+        for ibin in range(brange[0],brange[1]):
+            binmid[jbin] = 0.5*(self.edges[ibin] + self.edges[ibin+1])
+            binval[jbin] = self.data[ibin]
+            binerr[jbin] = max(1.0,math.sqrt(self.data[ibin]))
+            jbin += 1
+        return binmid, binval, binerr
 
     def save(self,hdf5file):
         grp = hdf5file.create_group(self.groupname())

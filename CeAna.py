@@ -81,7 +81,7 @@ class CeAna(object):
         print(rfile.keys())
 
         np.set_printoptions(precision=5,floatmode='fixed')
-        for batch,rep in uproot.iterate(files,filter_name="/evtinfo|trk|trksegs|trkmcsim|trksegsmc/i",report=True):
+        for batch,rep in uproot.iterate(files,filter_name="/evtinfo|trk.trk|trksegs|trkmcsim|trksegsmc/i",report=True):
             print(batch,type(batch))
             print("Processing batch ",ibatch)
             ibatch = ibatch+1
@@ -106,18 +106,16 @@ class CeAna(object):
             TrkMC = trkMC[:,0,0] # primary MC match of 1st track
             # basic consistency test
             assert((len(runnum) == len( Segs)) & (len(Segs) == len(SegsMC)) & (len(Segs) == len(TrkMC)) & (len(Nhits) == len(Segs)))
-            goodMC = (TrkMC.pdg == elPDG) & (TrkMC.trkrel._rel == 0)
-            OMom = TrkMC[goodMC].mom.magnitude()
-            goodMC = goodMC & (OMom>self.MomRange[0]) & (OMom < self.MomRange[1])
-            OMom = OMom[goodMC]
+            goodMC = (TrkMC.pdg == elPDG) & (TrkMC.trkrel._rel == 0) & (TrkMC.mom.magnitude() > self.MomRange[0]) & (TrkMC.mom.magnitude()< self.MomRange[1])
             ORho.extend(TrkMC[goodMC].pos.rho())
             OPhi.extend(TrkMC[goodMC].pos.phi())
             OCost.extend(TrkMC[goodMC].mom.cosTheta())
+            MCMom.extend(TrkMC[goodMC].mom.magnitude())
 #            print(np.array(TrkMC.pos.z()))
             OFoil.extend(list(map(TargetFoil,TrkMC[goodMC].pos.z())))
-            SegsMC = SegsMC[goodMC]
-            Segs = Segs[goodMC]
-            MCMom.extend(OMom)
+            goodAna = goodFit & goodMC
+            SegsMC = SegsMC[goodAna]
+            Segs = Segs[goodAna]
             # sample the fits at the specified
             for isid in range(len(self.SIDs)) :
                 sid = self.SIDs[isid]
@@ -128,6 +126,7 @@ class CeAna(object):
                 segsMC = SegsMC[(SegsMC.sid == sid) & (SegsMC.mom.z() > 0.0) ]
                 momMC = segsMC.mom.magnitude()
                 hasMC = ak.count_nonzero(momMC,axis=1)==1
+                print(len(hasMC),len(goodFit),len(hasmom),len(noTSDA))
                 select = hasMC & goodFit & hasmom & noTSDA
                 mom = mom[select]
                 momMC = momMC[select]
