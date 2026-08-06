@@ -35,12 +35,10 @@ class HistReflections(object):
         self.HDnFitCon = MyHist.MyHist(name="HDnFitCon",bins=100,range=[0.0,1.0],label="Down FitCon",title="Fit Consistency",xlabel="")
         self.HUpNHits = MyHist.MyHist(name="HUpNHits",bins=100,range=[0.5,100.5],label="Up NActive",title="Fit N Hits",xlabel="N Hits")
         self.HDnNHits = MyHist.MyHist(name="HDnNHits",bins=100,range=[0.5,100.5],label="Down NActive",title="Fit N Hits",xlabel="N Hits")
-        self.NUpHits = []
-        self.NDnHits = []
 
         # intersection histograms
-        nNMatBins = 15
-        NMatRange = [-0.5,14.5]
+        nNMatBins = 31
+        NMatRange = [-0.5,30.5]
         self.HNST = MyHist.MyHist(bins=nNMatBins,range=NMatRange,name="NInter",label="All ST",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
         self.HNIPA = MyHist.MyHist(bins=nNMatBins,range=NMatRange,name="NInter",label="All IPA",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
         self.HNSTTgt = MyHist.MyHist(bins=nNMatBins,range=NMatRange,name="NInter",label="Target ST",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
@@ -50,6 +48,8 @@ class HistReflections(object):
         momrange=(40.0,200.0)
         nDeltaMomBins = 200
         deltamomrange=(-10,5)
+        nDeltaTimeBins = 100
+        deltaTimeRange = [-8,8]
         self.HDnMom = MyHist.MyHist(name="DnMom",label="All", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+self.PDGName+" Downstream Momentum at "+self.CompName)
         self.HDnTgtMom = MyHist.MyHist(name="DnMom",label="$N_{ST}$>0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
         self.HDnNoTgtMom = MyHist.MyHist(name="DnMom",label="$N_{ST}$==0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
@@ -57,33 +57,14 @@ class HistReflections(object):
         self.HDnNoMatMom = MyHist.MyHist(name="DnMom",label="No Material", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
         self.HUpMom = MyHist.MyHist(name="UpMom",label="All", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
         self.HUpTgtMom = MyHist.MyHist(name="UpMom",label="$N_{ST}$>0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-        self.HUpNoTgtMom = MyHist.MyHist(name="UpMom",label="$N_{ST}$==0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-        self.HUpNoIPAMom = MyHist.MyHist(name="UpMom",label="$N_{IPA}$==0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
         self.HUpNoMatMom = MyHist.MyHist(name="UpMom",label="No Material", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
         # Momentum comparison histograms
         self.HDeltaMom = MyHist.MyHist(name="DeltaMom",label="All", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
         self.HDeltaTgtMom = MyHist.MyHist(name="DeltaMom",label="$N_{ST}$>0", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
-        self.HDeltaNoTgtMom = MyHist.MyHist(name="DeltaMom",label="$N_{ST}$==0", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
-        self.HDeltaNoIPAMom = MyHist.MyHist(name="DeltaMom",label="$N_{IPA}$==0", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
         self.HDeltaNoMatMom = MyHist.MyHist(name="DeltaMom",label="No Material", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
 
-#        self.HUpTgtMomB12 = MyHist.MyHist(name="UpMom",label="B12", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-#        self.HUpTgtMomB34 = MyHist.MyHist(name="UpMom",label="B34", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-#        self.HUpTgtMomB56 = MyHist.MyHist(name="UpMom",label="B56", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-#        self.HUpTgtMomB78 = MyHist.MyHist(name="UpMom",label="B78", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-#        self.HUpTgtMomB9p = MyHist.MyHist(name="UpMom",label="B9p", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-#
-#        self.HDnTgtMomB12 = MyHist.MyHist(name="DnMom",label="B12", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-#        self.HDnTgtMomB34 = MyHist.MyHist(name="DnMom",label="B34", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-#        self.HDnTgtMomB56 = MyHist.MyHist(name="DnMom",label="B56", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-#        self.HDnTgtMomB78 = MyHist.MyHist(name="DnMom",label="B78", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-#        self.HDnTgtMomB9p = MyHist.MyHist(name="DnMom",label="B9p", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-#
-#        self.HDeltaTgtMomB12 = MyHist.MyHist(name="DeltaMom",label="B12", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
-#        self.HDeltaTgtMomB34 = MyHist.MyHist(name="DeltaMom",label="B34", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
-#        self.HDeltaTgtMomB56 = MyHist.MyHist(name="DeltaMom",label="B56", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
-#        self.HDeltaTgtMomB78 = MyHist.MyHist(name="DeltaMom",label="B78", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
-#        self.HDeltaTgtMomB9p = MyHist.MyHist(name="DeltaMom",label="B9p", bins=nDeltaMomBins, range=deltamomrange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+" $\\Delta$ Momentum at "+self.CompName)
+        self.HdnDeltaTime = MyHist.MyHist(name="DeltaTime",label="Upstream",bins=nDeltaTimeBins, range=deltaTimeRange, xlabel="Downstream - Upstream time (ns)",title=self.PDGName+" $\\Delta$ Time at "+self.CompName)
+        self.HupDeltaTime = MyHist.MyHist(name="DeltaTime",label="Downstream",bins=nDeltaTimeBins, range=deltaTimeRange, xlabel="Downstream - Upstream time (ns)",title=self.PDGName+" $\\Delta$ Time at "+self.CompName)
 
     def Print(self):
         print("HistReflections, nhits =",self.MinNHits,"Mom Range",self.MomRange,"Comparison at",self.CompName,"PDG",self.PDGName)
@@ -91,8 +72,9 @@ class HistReflections(object):
     def Loop(self,files,treename):
         # global counts
         NEvent = 0
-        NReflect = 0
-        NSelect = 0
+        NGood = 0
+        NMatch = 0
+        NFinal = 0
         # append tree to files for uproot
         Files = [None]*len(files)
         for i in range(0,len(files)):
@@ -106,12 +88,9 @@ class HistReflections(object):
             nhits = batch['trk.nactive']  # track N hits
             fitcon = batch['trk.fitcon']  # track fit consistency
             trkQual = batch['trkqual.result']  # track fit quality
-            fitpdg = batch['trk.pdg']  # track fit consistency
-            # compress out unneeded dimensions
+            # Separate by upstream, downstream track
             upSegs = segs[:,0] # upstream track fits
             dnSegs = segs[:,1] # downstream track fits
-            upFitPDG = fitpdg[:,0]
-            dnFitPDG = fitpdg[:,1]
             upFitCon = fitcon[:,0]
             dnFitCon = fitcon[:,1]
             upNhits = nhits[:,0]
@@ -126,140 +105,83 @@ class HistReflections(object):
             upGoodFit = (upNhits >= self.MinNHits) & (upFitCon > self.MinFitCon) & (upTQ > self.MinTQ)
             dnGoodFit = (dnNhits >= self.MinNHits) & (dnFitCon > self.MinFitCon) & (dnTQ > self.MinTQ)
 
-            # select the segments of interest: there should be one of these. Eventually make the momentum sign an option TODO:
-            upent = (upSegs.sid == self.SID) & (upSegs.mom.Z() > 0.0) & upGoodFit
-            dnent = (dnSegs.sid == self.SID) & (dnSegs.mom.Z() > 0.0) & dnGoodFit
-            upentcnt = ak.sum(upent,axis=1)
-            dnentcnt = ak.sum(dnent,axis=1)
-            goodMatch = (upentcnt == dnentcnt)
-
+            # select the segments of interest and require consistency
+            updnseg = (upSegs.sid == self.SID) & (upSegs.mom.Z() > 0.0) & upGoodFit
+            dndnseg = (dnSegs.sid == self.SID) & (dnSegs.mom.Z() > 0.0) & dnGoodFit
+            upupseg = (upSegs.sid == self.SID) & (upSegs.mom.Z() < 0.0) & upGoodFit
+            dnupseg = (dnSegs.sid == self.SID) & (dnSegs.mom.Z() < 0.0) & dnGoodFit
+            updncnt = ak.sum(updnseg,axis=1)
+            upupcnt = ak.sum(upupseg,axis=1)
+            dnupcnt = ak.sum(dnupseg,axis=1)
+            dndncnt = ak.sum(dndnseg,axis=1)
+            assert((len(upupcnt) == len(updncnt)) & (len(dndncnt) == len(dnupcnt)) & (len(upupcnt) == len(dndncnt)))
+            test = [1]*len(upupcnt)
+            goodMatch = ((updncnt == dndncnt) & (updncnt == test) & (upupcnt == dnupcnt) & (upupcnt == test))
             # extract properties to test
-            upMom = upSegs[upent & goodMatch].mom.magnitude()
-            dnMom = dnSegs[dnent & goodMatch].mom.magnitude()
-            deltaMom = dnMom - upMom
-            goodMom = (dnMom > self.MomRange[0]) & (dnMom < self.MomRange[1]) & (upMom > self.MomRange[0]) & (upMom < self.MomRange[1])
-#            print(upMom,dnMom,len(upMom),len(dnMom))
-            deltaEntMom = upMom -dnMom
-            upEntTime = upSegs[upent & goodMatch].time
-            dnEntTime = dnSegs[dnent & goodMatch].time
-            deltaEntTime = dnEntTime-upEntTime
-            goodDeltaT = abs(deltaEntTime) < self.MaxDeltaT
-            goodFinal = goodMatch & goodMom & goodDeltaT
-            NReflect +=  ak.count_nonzero(goodMatch)
-            NSelect +=  ak.count_nonzero(goodMatch)
+            updnMom = upSegs[updnseg & goodMatch].mom.magnitude()
+            dndnMom = dnSegs[dndnseg & goodMatch].mom.magnitude()
+            upupMom = upSegs[upupseg & goodMatch].mom.magnitude()
+            dnupMom = dnSegs[dnupseg & goodMatch].mom.magnitude()
+
+            dnDeltaMom = dndnMom - updnMom
+            upDeltaMom = dnupMom - upupMom
+            goodMom = (dndnMom > self.MomRange[0]) & (dndnMom < self.MomRange[1]) & (updnMom > self.MomRange[0]) & (updnMom < self.MomRange[1])
+            updnTime = upSegs[updnseg & goodMatch].time
+            dndnTime = dnSegs[dndnseg & goodMatch].time
+            upupTime = upSegs[upupseg & goodMatch].time
+            dnupTime = dnSegs[dnupseg & goodMatch].time
+            dnDeltaTime = dndnTime-updnTime
+            upDeltaTime = dnupTime-upupTime
+            self.HdnDeltaTime.fill(np.array(ak.flatten(dnDeltaTime)))
+            self.HupDeltaTime.fill(np.array(ak.flatten(upDeltaTime)))
+
+            goodDeltaT = (abs(dnDeltaTime) < self.MaxDeltaT) & (abs(upDeltaTime) < self.MaxDeltaT)
+            goodFinal = goodMatch & goodDeltaT
+            NGood +=  ak.count_nonzero(upGoodFit)
+            NMatch +=  ak.count_nonzero(goodMatch)
+            NFinal +=  ak.count_nonzero(goodFinal)
             #
-            self.HUpMom.fill(np.array(ak.flatten(upMom)))
-            self.HDnMom.fill(np.array(ak.flatten(dnMom)))
-            self.HDeltaMom.fill(np.array(ak.flatten(deltaMom)))
+            self.HUpMom.fill(np.array(ak.flatten(updnMom)))
+            self.HDnMom.fill(np.array(ak.flatten(dndnMom)))
+            self.HDeltaMom.fill(np.array(ak.flatten(dnDeltaMom)))
             # count IPA and target intersections
-            nfoil = ak.count_nonzero(upSegs.sid==SID.ST_Foils(),axis=1)
+            nfoil = ak.count_nonzero(upSegs.sid==SID.ST_Foils(),axis=1) + ak.count_nonzero(dnSegs.sid==SID.ST_Foils(),axis=1)
             self.HNST.fill(np.array(nfoil))
-            nipa = ak.count_nonzero(upSegs.sid==SID.IPA(),axis=1)
+            nipa = ak.count_nonzero(upSegs.sid==SID.IPA(),axis=1) +  ak.count_nonzero(dnSegs.sid==SID.IPA(),axis=1)
             self.HNIPA.fill(np.array(nipa))
             # select fits
             hastgt = (nfoil>0)
-            noipa = (nipa==0)
-            notgt = (nfoil==0)
-            nomat = notgt & noipa
-            goodTgt = ak.flatten(goodMatch & goodMom & hastgt)
-            nfoilsel = nfoil[goodTgt]
+            nomat = (nipa==0) & (nfoil==0)
+            hasTgtInt = ak.flatten(goodFinal & hastgt)
+            nfoilsel = nfoil[hasTgtInt]
             self.HNSTTgt.fill(np.array(nfoilsel))
-            nipasel = nipa[goodTgt]
+            nipasel = nipa[hasTgtInt]
             self.HNIPATgt.fill(np.array(nipasel))
-            upTgtMom = upMom[goodTgt]
-            dnTgtMom = dnMom[goodTgt]
+            upTgtMom = updnMom[hasTgtInt]
+            dnTgtMom = dndnMom[hasTgtInt]
             self.HUpTgtMom.fill(np.array(ak.flatten(upTgtMom)))
             self.HDnTgtMom.fill(np.array(ak.flatten(dnTgtMom)))
             deltaTgtMom = dnTgtMom - upTgtMom
             self.HDeltaTgtMom.fill(np.array(ak.flatten(deltaTgtMom)))
-#            ### BINNED FITS ###
-#
-#            B12 = np.logical_or((nfoil == 1), (nfoil == 2))
-#            upTgtMomB12 = upMom[B12]
-#            dnTgtMomB12 = dnMom[B12]
-#            self.HUpTgtMomB12.fill(upTgtMomB12)
-#            self.HDnTgtMomB12.fill(dnTgtMomB12)
-#            deltaTgtMomB12 = dnTgtMomB12 - upTgtMomB12
-#            self.HDeltaTgtMomB12.fill(deltaTgtMomB12)
-#
-#            B34 = np.logical_or((nfoil == 3), (nfoil == 4))
-#            upTgtMomB34 = upMom[B34]
-#            dnTgtMomB34 = dnMom[B34]
-#            self.HUpTgtMomB34.fill(upTgtMomB34)
-#            self.HDnTgtMomB34.fill(dnTgtMomB34)
-#            deltaTgtMomB34 = dnTgtMomB34 - upTgtMomB34
-#            self.HDeltaTgtMomB34.fill(deltaTgtMomB34)
-#
-#            B56 = np.logical_or((nfoil == 5), (nfoil == 5))
-#            upTgtMomB56 = upMom[B56]
-#            dnTgtMomB56 = dnMom[B56]
-#            self.HUpTgtMomB56.fill(upTgtMomB56)
-#            self.HDnTgtMomB56.fill(dnTgtMomB56)
-#            deltaTgtMomB56 = dnTgtMomB56 - upTgtMomB56
-#            self.HDeltaTgtMomB56.fill(deltaTgtMomB56)
-#
-#            B78 = np.logical_or((nfoil == 7), (nfoil == 8))
-#            upTgtMomB78 = upMom[B78]
-#            dnTgtMomB78 = dnMom[B78]
-#            self.HUpTgtMomB78.fill(upTgtMomB78)
-#            self.HDnTgtMomB78.fill(dnTgtMomB78)
-#            deltaTgtMomB78 = dnTgtMomB78 - upTgtMomB78
-#            self.HDeltaTgtMomB78.fill(deltaTgtMomB78)
-#
-#            B9p = (nfoil >= 9)
-#            upTgtMomB9p = upMom[B9p]
-#            dnTgtMomB9p = dnMom[B9p]
-#            self.HUpTgtMomB9p.fill(upTgtMomB9p)
-#            self.HDnTgtMomB9p.fill(dnTgtMomB9p)
-#            deltaTgtMomB9p = dnTgtMomB9p - upTgtMomB9p
-#            self.HDeltaTgtMomB9p.fill(deltaTgtMomB9p)
 
+            self.HUpFitCon.fill(np.array(upFitCon[hasTgtInt]))
+            self.HDnFitCon.fill(np.array(dnFitCon[hasTgtInt]))
+            self.HUpNHits.fill(np.array(upNhits[hasTgtInt]))
+            self.HDnNHits.fill(np.array(dnNhits[hasTgtInt]))
+            self.HUpTQ.fill(np.array(upTQ[hasTgtInt]))
+            self.HDnTQ.fill(np.array(dnTQ[hasTgtInt]))
 
-            self.HUpFitCon.fill(np.array(upFitCon[goodTgt]))
-            self.HDnFitCon.fill(np.array(dnFitCon[goodTgt]))
-            self.HUpNHits.fill(np.array(upNhits[goodTgt]))
-            self.HDnNHits.fill(np.array(dnNhits[goodTgt]))
-            self.HUpTQ.fill(np.array(upTQ[goodTgt]))
-            self.HDnTQ.fill(np.array(dnTQ[goodTgt]))
-
-            self.NUpHits.extend(np.array(upNhits[goodTgt]))
-            self.NDnHits.extend(np.array(dnNhits[goodTgt]))
-
-            # no target
-            goodNoTgt = goodMatch & goodMom & notgt
-            upNoTgtMom = upMom[goodNoTgt]
-            dnNoTgtMom = dnMom[goodNoTgt]
-            self.HUpNoTgtMom.fill(np.array(ak.flatten(upNoTgtMom)))
-            self.HDnNoTgtMom.fill(np.array(ak.flatten(dnNoTgtMom)))
-            deltaNoTgtMom = dnNoTgtMom - upNoTgtMom
-            self.HDeltaNoTgtMom.fill(np.array(ak.flatten(deltaNoTgtMom)))
-            # no IPA
-            goodNoIPA = goodMatch & noipa
-            upNoIPAMom = upMom[goodNoIPA]
-            dnNoIPAMom = dnMom[goodNoIPA]
-            self.HUpNoIPAMom.fill(np.array(ak.flatten(upNoIPAMom)))
-            self.HDnNoIPAMom.fill(np.array(ak.flatten(dnNoIPAMom)))
-            deltaNoIPAMom = dnNoIPAMom - upNoIPAMom
-            self.HDeltaNoIPAMom.fill(np.array(ak.flatten(deltaNoIPAMom)))
             # no material
-            goodNoMat = goodMatch & nomat
-            upNoMatMom = upMom[goodNoMat]
-            dnNoMatMom = dnMom[goodNoMat]
+            goodNoMat = goodFinal & nomat
+            upNoMatMom = updnMom[goodNoMat]
+            dnNoMatMom = dndnMom[goodNoMat]
             self.HUpNoMatMom.fill(np.array(ak.flatten(upNoMatMom)))
             self.HDnNoMatMom.fill(np.array(ak.flatten(dnNoMatMom)))
             deltaNoMatMom = dnNoMatMom - upNoMatMom
             self.HDeltaNoMatMom.fill(np.array(ak.flatten(deltaNoMatMom)))
 
         print()
-        print("From", NEvent,"total events found", NReflect," matching reflections with good quality reco,", NSelect, "final selections and",self.HUpTgtMom.integral(), "with Target")
-
-    def Plot(self):
-        fig, (hits) = plt.subplots(1,1,layout='constrained', figsize=(5,5))
-        hist = hits.hist2d(self.NUpHits,self.NDnHits,label="NHits",bins=[100,100],range=[[-0.5,99.5],[-0.5,99.5]],density=True,norm="linear")
-        hits.set_title("Reflection Fit N Hits")
-        hits.set_xlabel("Upstream N Hits")
-        hits.set_ylabel("Downstream N hits")
-
+        print("From", NEvent,"total events found", NGood, "with good reco,", NMatch,"matching reflections,", NFinal, "final selections and",self.HUpTgtMom.integral(), "with Target")
 
     def Write(self,savefile):
         with h5py.File(savefile, 'w') as hdf5file:
@@ -282,28 +204,11 @@ class HistReflections(object):
             self.HUpMom.save(hdf5file)
             self.HUpTgtMom.save(hdf5file)
             self.HUpNoMatMom.save(hdf5file)
-            self.HUpNoTgtMom.save(hdf5file)
-            self.HUpNoIPAMom.save(hdf5file)
+            #
             self.HDeltaMom.save(hdf5file)
             self.HDeltaTgtMom.save(hdf5file)
-            self.HDeltaNoTgtMom.save(hdf5file)
-            self.HDeltaNoIPAMom.save(hdf5file)
             self.HDeltaNoMatMom.save(hdf5file)
+            #
+            self.HdnDeltaTime.save(hdf5file)
+            self.HupDeltaTime.save(hdf5file)
 
-#            self.HUpTgtMomB12.save(hdf5file)
-#            self.HUpTgtMomB34.save(hdf5file)
-#            self.HUpTgtMomB56.save(hdf5file)
-#            self.HUpTgtMomB78.save(hdf5file)
-#            self.HUpTgtMomB9p.save(hdf5file)
-#
-#            self.HDnTgtMomB12.save(hdf5file)
-#            self.HDnTgtMomB34.save(hdf5file)
-#            self.HDnTgtMomB56.save(hdf5file)
-#            self.HDnTgtMomB78.save(hdf5file)
-#            self.HDnTgtMomB9p.save(hdf5file)
-#
-#            self.HDeltaTgtMomB12.save(hdf5file)
-#            self.HDeltaTgtMomB34.save(hdf5file)
-#            self.HDeltaTgtMomB56.save(hdf5file)
-#            self.HDeltaTgtMomB78.save(hdf5file)
-#            self.HDeltaTgtMomB9p.save(hdf5file)
