@@ -20,11 +20,11 @@ class HistReflections(object):
         PDGNames = {-13:"$\\mu^+$",-11:"$e^+$",11:"$e^-$",13:"$\\mu^-$"}
         self.PDGName = PDGNames[self.PDG]
         # setup cuts; these should be overrideable FIXME
-        self.MinNHits = 20
-        self.MinFitCon = 1.0e-5
+        self.MinNHits = 15
+        self.MinFitCon = 1.0e-6
         self.MaxDeltaT = 5.0 # nsec
         self.MomRange = momrange
-        self.MinTQ = 0.8 # ANN output
+        self.MinTQ = 0.2 # ANN output
         # Surface Ids
         self.SID = sid
         self.CompName = SID.SurfaceName(sid)
@@ -45,7 +45,7 @@ class HistReflections(object):
         self.HNIPATgt = MyHist.MyHist(bins=nNMatBins,range=NMatRange,name="NInter",label="Target IPA",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
         # Momentum histograms
         nMomBins = 100
-        momrange=(40.0,200.0)
+        momrange=(40.0,220.0)
         nDeltaMomBins = 200
         deltamomrange=(-10,5)
         nDeltaTimeBins = 100
@@ -104,7 +104,7 @@ class HistReflections(object):
             # select based on fit quality
             upGoodFit = (upNhits >= self.MinNHits) & (upFitCon > self.MinFitCon) & (upTQ > self.MinTQ)
             dnGoodFit = (dnNhits >= self.MinNHits) & (dnFitCon > self.MinFitCon) & (dnTQ > self.MinTQ)
-
+            NGood +=  ak.count_nonzero(upGoodFit & dnGoodFit)
             # select the segments of interest and require consistency
             updnseg = (upSegs.sid == self.SID) & (upSegs.mom.Z() > 0.0) & upGoodFit
             dndnseg = (dnSegs.sid == self.SID) & (dnSegs.mom.Z() > 0.0) & dnGoodFit
@@ -117,15 +117,8 @@ class HistReflections(object):
             assert((len(upupcnt) == len(updncnt)) & (len(dndncnt) == len(dnupcnt)) & (len(upupcnt) == len(dndncnt)))
             test = [1]*len(upupcnt)
             goodMatch = ((updncnt == dndncnt) & (updncnt == test) & (upupcnt == dnupcnt) & (upupcnt == test))
-            # extract properties to test
-            updnMom = upSegs[updnseg & goodMatch].mom.magnitude()
-            dndnMom = dnSegs[dndnseg & goodMatch].mom.magnitude()
-            upupMom = upSegs[upupseg & goodMatch].mom.magnitude()
-            dnupMom = dnSegs[dnupseg & goodMatch].mom.magnitude()
-
-            dnDeltaMom = dndnMom - updnMom
-            upDeltaMom = dnupMom - upupMom
-            goodMom = (dndnMom > self.MomRange[0]) & (dndnMom < self.MomRange[1]) & (updnMom > self.MomRange[0]) & (updnMom < self.MomRange[1])
+            NMatch +=  ak.count_nonzero(goodMatch)
+            # time difference
             updnTime = upSegs[updnseg & goodMatch].time
             dndnTime = dnSegs[dndnseg & goodMatch].time
             upupTime = upSegs[upupseg & goodMatch].time
@@ -134,12 +127,19 @@ class HistReflections(object):
             upDeltaTime = dnupTime-upupTime
             self.HdnDeltaTime.fill(np.array(ak.flatten(dnDeltaTime)))
             self.HupDeltaTime.fill(np.array(ak.flatten(upDeltaTime)))
-
             goodDeltaT = (abs(dnDeltaTime) < self.MaxDeltaT) & (abs(upDeltaTime) < self.MaxDeltaT)
-            goodFinal = goodMatch & goodDeltaT
-            NGood +=  ak.count_nonzero(upGoodFit)
-            NMatch +=  ak.count_nonzero(goodMatch)
+            goodFinal = ak.any(goodMatch & goodDeltaT,highlevel=True, axis=1)
+            print(goodFinal)
             NFinal +=  ak.count_nonzero(goodFinal)
+            # extract properties to test
+            updnMom = upSegs[updnseg & goodFinal].mom.magnitude()
+            dndnMom = dnSegs[dndnseg & goodFinal].mom.magnitude()
+            upupMom = upSegs[upupseg & goodFinal].mom.magnitude()
+            dnupMom = dnSegs[dnupseg & goodFinal].mom.magnitude()
+
+            dnDeltaMom = dndnMom - updnMom
+            upDeltaMom = dnupMom - upupMom
+            goodMom = (dndnMom > self.MomRange[0]) & (dndnMom < self.MomRange[1]) & (updnMom > self.MomRange[0]) & (updnMom < self.MomRange[1])
             #
             self.HUpMom.fill(np.array(ak.flatten(updnMom)))
             self.HDnMom.fill(np.array(ak.flatten(dndnMom)))
@@ -152,11 +152,11 @@ class HistReflections(object):
             # select fits
             hastgt = (nfoil>0)
             nomat = (nipa==0) & (nfoil==0)
-            hasTgtInt = ak.flatten(goodFinal & hastgt)
-            nfoilsel = nfoil[hasTgtInt]
-            self.HNSTTgt.fill(np.array(nfoilsel))
-            nipasel = nipa[hasTgtInt]
-            self.HNIPATgt.fill(np.array(nipasel))
+            hasTgtInt = goodFinal & hastgt
+            nfoiltgt = nfoil[hasTgtInt]
+            self.HNSTTgt.fill(np.array(nfoiltgt))
+            nipatgt = nipa[hasTgtInt]
+            self.HNIPATgt.fill(np.array(nipatgt))
             upTgtMom = updnMom[hasTgtInt]
             dnTgtMom = dndnMom[hasTgtInt]
             self.HUpTgtMom.fill(np.array(ak.flatten(upTgtMom)))
