@@ -4,7 +4,7 @@ from scipy import special
 from scipy.optimize import curve_fit
 from scipy.stats import crystalball
 import math
-import MyHist
+import HistUtil
 
 def fxn_DSCB(x, mu, sigma, alphal, nl, alphar, nr):
     """ Evaluates the Double-Sided Crystal Ball Probability Density Function.  """
@@ -57,20 +57,20 @@ class CrystalBall:
             x = -x
         return amp*crystalball.pdf(x,*pars)
     def init(self,hist):
-        loc_0 = hist.mean()
+        loc_0 = HistUtil.mean(hist)
         if self.rev:
             loc_0 = -1*loc_0
-        beta_0 = 3*math.sqrt(hist.variance())
+        beta_0 = 3*math.sqrt(HistUtil.variance(hist))
         m_0 = 3.0
-        scale_0 = hist.FWHM()/2.355
-        amp_0 = hist.integral()*hist.binWidth()
+        scale_0 = HistUtil.FWHM(hist)/2.355
+        amp_0 = HistUtil.integral(hist)*HistUtil.bin_width(hist)
         params = np.array([amp_0, beta_0, m_0, loc_0, scale_0]) # initial parameters
         return params
     def fit(self,hist,xrange=[0,-1],verbose=False) :
         iparams = self.init(hist)
         if verbose:
             print("Initial parameters",iparams)
-        binmid,binval,binerr = hist.fitArrays(xrange)
+        binmid,binval,binerr = HistUtil.fit_arrays(hist,xrange)
         oparams, cov = curve_fit(f=self.fxn,xdata=binmid,ydata=binval,sigma=binerr,absolute_sigma=True,p0=iparams)
         if verbose:
             print("Optimized parameters",oparams)

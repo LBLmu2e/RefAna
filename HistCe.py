@@ -11,7 +11,7 @@ from scipy.optimize import curve_fit
 import math
 from scipy import special
 import SurfaceIds as SID
-import MyHist
+import HistUtil
 import h5py
 from scipy.stats import crystalball
 
@@ -46,7 +46,7 @@ class HistCe(object):
         #print(len(MomReso[0]),MomReso[0:10][0])
 
         self.TrkLoc = [None]*3
-        self.HOriginMom = MyHist.MyHist(name="OriginMom",label="MC Origin",bins=nMomBins, range=momrange,title="Momentum at Origin",xlabel="Momentum (MeV)")
+        self.HOriginMom = HistUtil.new_hist(name="OriginMom",label="MC Origin",bins=nMomBins, range=momrange,title="Momentum at Origin",xlabel="Momentum (MeV)")
 
         self.HTrkFitMom = [None]*3
         self.HTrkMCMom = [None]*3
@@ -57,34 +57,34 @@ class HistCe(object):
         for isid in range(len(self.TrackerSIDs)):
             loc = SID.SurfaceName(self.TrackerSIDs[isid])
         # momentum in tracker
-            self.HTrkFitMom[isid] = MyHist.MyHist(name=loc+"Mom",label="Fit",bins=nMomBins, range=momrange,title="Momentum at "+loc,xlabel="Momentum (MeV)")
-            self.HTrkMCMom[isid] = MyHist.MyHist(name=loc+"Mom",label="MC",bins=nMomBins, range=momrange,title="Momentum at "+loc,xlabel="Momentum (MeV)")
-            self.HTrkResoMom[isid] = MyHist.MyHist(name=loc+"Resolution",label="",bins=nDeltaMomBins, range=momresorange,title="Momentum Resolution at "+loc,xlabel="$\\Delta$ Momentum (MeV)")
-            self.HTrkRespMom[isid] = MyHist.MyHist(name=loc+"Response",label="All",bins=nDeltaMomBins, range=momresprange,title="Momentum Response at "+loc,xlabel="$\\Delta$ Momentum (MeV)")
-            self.HTrkRefRespMom[isid] = MyHist.MyHist(name=loc+"Response",label="Reflectable",bins=nDeltaMomBins, range=momresprange,title="Momentum Response at "+loc,xlabel="$\\Delta$ Momentum (MeV)")
+            self.HTrkFitMom[isid] = HistUtil.new_hist(name=loc+"Mom",label="Fit",bins=nMomBins, range=momrange,title="Momentum at "+loc,xlabel="Momentum (MeV)")
+            self.HTrkMCMom[isid] = HistUtil.new_hist(name=loc+"Mom",label="MC",bins=nMomBins, range=momrange,title="Momentum at "+loc,xlabel="Momentum (MeV)")
+            self.HTrkResoMom[isid] = HistUtil.new_hist(name=loc+"Resolution",label="",bins=nDeltaMomBins, range=momresorange,title="Momentum Resolution at "+loc,xlabel="$\\Delta$ Momentum (MeV)")
+            self.HTrkRespMom[isid] = HistUtil.new_hist(name=loc+"Response",label="All",bins=nDeltaMomBins, range=momresprange,title="Momentum Response at "+loc,xlabel="$\\Delta$ Momentum (MeV)")
+            self.HTrkRefRespMom[isid] = HistUtil.new_hist(name=loc+"Response",label="Reflectable",bins=nDeltaMomBins, range=momresprange,title="Momentum Response at "+loc,xlabel="$\\Delta$ Momentum (MeV)")
 
         # target intersections
         rhorange = [20,80]
-        self.HTgtRho = MyHist.MyHist(name="HTgtRho",bins=100,range=rhorange,label="Fit",title="Target Rho",xlabel="Rho (mm)")
-        self.HTgtRhoMC = MyHist.MyHist(name="HTgtRho",bins=100,range=rhorange,label="MC",title="Target Rho",xlabel="Rho (mm)")
-        self.HOriginRho = MyHist.MyHist(name="HTgtRho",bins=100,range=rhorange,label="MC Origin",title="Target Rho",xlabel="Rho (mm)")
+        self.HTgtRho = HistUtil.new_hist(name="HTgtRho",bins=100,range=rhorange,label="Fit",title="Target Rho",xlabel="Rho (mm)")
+        self.HTgtRhoMC = HistUtil.new_hist(name="HTgtRho",bins=100,range=rhorange,label="MC",title="Target Rho",xlabel="Rho (mm)")
+        self.HOriginRho = HistUtil.new_hist(name="HTgtRho",bins=100,range=rhorange,label="MC Origin",title="Target Rho",xlabel="Rho (mm)")
         foilrange = [-0.5,36.5]
-        self.HTgtFoil = MyHist.MyHist(name="HTgtFoil",bins=37,range=foilrange,label="Fit",title="Target Foil",xlabel="Foil (mm)")
-        self.HTgtFoilMC = MyHist.MyHist(name="HTgtFoil",bins=37,range=foilrange,label="MC",title="Target Foil",xlabel="Foil (mm)")
-        self.HOriginFoil = MyHist.MyHist(name="HTgtFoil",bins=37,range=foilrange,label="MC Origin",title="Target Foil",xlabel="Foil (mm)")
+        self.HTgtFoil = HistUtil.new_hist(name="HTgtFoil",bins=37,range=foilrange,label="Fit",title="Target Foil",xlabel="Foil (mm)")
+        self.HTgtFoilMC = HistUtil.new_hist(name="HTgtFoil",bins=37,range=foilrange,label="MC",title="Target Foil",xlabel="Foil (mm)")
+        self.HOriginFoil = HistUtil.new_hist(name="HTgtFoil",bins=37,range=foilrange,label="MC Origin",title="Target Foil",xlabel="Foil (mm)")
         costrange = [-0.8,0.8]
-        self.HTgtCosT = MyHist.MyHist(name="HTgtCosT",bins=100,range=costrange,label="Fit",title="Target Momentum Cos($\\Theta$)",xlabel="Cos($\\Theta$)")
-        self.HTgtCosTMC = MyHist.MyHist(name="HTgtCosT",bins=100,range=costrange,label="MC",title="Target Momentum Cos($\\Theta$)",xlabel="Cos($\\Theta$)")
-        self.HOriginCosT = MyHist.MyHist(name="HTgtCosT",bins=100,range=costrange,label="MC Origin",title="Target Momentum Cos($\\Theta$)",xlabel="Cos($\\Theta$)")
+        self.HTgtCosT = HistUtil.new_hist(name="HTgtCosT",bins=100,range=costrange,label="Fit",title="Target Momentum Cos($\\Theta$)",xlabel="Cos($\\Theta$)")
+        self.HTgtCosTMC = HistUtil.new_hist(name="HTgtCosT",bins=100,range=costrange,label="MC",title="Target Momentum Cos($\\Theta$)",xlabel="Cos($\\Theta$)")
+        self.HOriginCosT = HistUtil.new_hist(name="HTgtCosT",bins=100,range=costrange,label="MC Origin",title="Target Momentum Cos($\\Theta$)",xlabel="Cos($\\Theta$)")
 
         ### BINS ###
 
 
-        self.HDTgtMomB12 = MyHist.MyHist(name="DMom",label="B12", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B12")
-        self.HDTgtMomB34 = MyHist.MyHist(name="DMom",label="B34", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B34")
-        self.HDTgtMomB56 = MyHist.MyHist(name="DMom",label="B56", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B56")
-        self.HDTgtMomB78 = MyHist.MyHist(name="DMom",label="B78", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B78")
-        self.HDTgtMomB9p = MyHist.MyHist(name="DMom",label="B9p", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B9p")
+        self.HDTgtMomB12 = HistUtil.new_hist(name="DMom",label="B12", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B12")
+        self.HDTgtMomB34 = HistUtil.new_hist(name="DMom",label="B34", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B34")
+        self.HDTgtMomB56 = HistUtil.new_hist(name="DMom",label="B56", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B56")
+        self.HDTgtMomB78 = HistUtil.new_hist(name="DMom",label="B78", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B78")
+        self.HDTgtMomB9p = HistUtil.new_hist(name="DMom",label="B9p", bins=nMomBins, range=momresprange, xlabel="Mom - True Mom (MeV)", title="Ce at TT_Front B9p")
 
     def Loop(self,files):
         elPDG = 11
@@ -243,56 +243,56 @@ class HistCe(object):
     def PlotTrackerMomentum(self):
         fig, (amom,areso,aresp) = plt.subplots(3,3,layout='constrained', figsize=(15,20))
         for isid in range(len(self.TrackerSIDs)) :
-            self.HTrkFitMom[isid].plot(amom[isid])
-            self.HTrkMCMom[isid].plot(amom[isid])
-            self.HTrkResoMom[isid].plot(areso[isid])
-            self.HTrkRespMom[isid].plot(aresp[isid])
-            self.HTrkRefRespMom[isid].plot(aresp[isid])
+            HistUtil.plot(self.HTrkFitMom[isid],amom[isid])
+            HistUtil.plot(self.HTrkMCMom[isid],amom[isid])
+            HistUtil.plot(self.HTrkResoMom[isid],areso[isid])
+            HistUtil.plot(self.HTrkRespMom[isid],aresp[isid])
+            HistUtil.plot(self.HTrkRefRespMom[isid],aresp[isid])
         amom[0].legend(loc="upper left")
         aresp[0].legend(loc="upper left")
 
     def PlotTarget(self):
         fig, (arho,afoil,acost) = plt.subplots(1,3,layout='constrained', figsize=(15,5))
         # Rho
-        self.HTgtRho.plot(arho)
-        self.HTgtRhoMC.plot(arho)
-        self.HOriginRho.plot(arho)
+        HistUtil.plot(self.HTgtRho,arho)
+        HistUtil.plot(self.HTgtRhoMC,arho)
+        HistUtil.plot(self.HOriginRho,arho)
         arho.legend(loc="upper left")
         # Foil
-        self.HTgtFoil.plot(afoil)
-        self.HTgtFoilMC.plot(afoil)
-        self.HOriginFoil.plot(afoil)
+        HistUtil.plot(self.HTgtFoil,afoil)
+        HistUtil.plot(self.HTgtFoilMC,afoil)
+        HistUtil.plot(self.HOriginFoil,afoil)
         # Cos(theta)
-        self.HTgtCosT.plot(acost)
-        self.HTgtCosTMC.plot(acost)
-        self.HOriginCosT.plot(acost)
+        HistUtil.plot(self.HTgtCosT,acost)
+        HistUtil.plot(self.HTgtCosTMC,acost)
+        HistUtil.plot(self.HOriginCosT,acost)
 
     def Write(self,savefile):
         with h5py.File(savefile, 'w') as hdf5file:
-            self.HOriginMom.save(hdf5file)
+            HistUtil.save_hist(self.HOriginMom,hdf5file)
             for isid in range(len(self.TrackerSIDs)) :
-                self.HTrkFitMom[isid].save(hdf5file)
-                self.HTrkMCMom[isid].save(hdf5file)
-                self.HTrkResoMom[isid].save(hdf5file)
-                self.HTrkRespMom[isid].save(hdf5file)
-                self.HTrkRefRespMom[isid].save(hdf5file)
-            self.HTgtRho.save(hdf5file)
-            self.HTgtRhoMC.save(hdf5file)
-            self.HOriginRho.save(hdf5file)
-            self.HTgtFoil.save(hdf5file)
-            self.HTgtFoilMC.save(hdf5file)
-            self.HOriginFoil.save(hdf5file)
-            self.HTgtCosT.save(hdf5file)
-            self.HTgtCosTMC.save(hdf5file)
-            self.HOriginCosT.save(hdf5file)
+                HistUtil.save_hist(self.HTrkFitMom[isid],hdf5file)
+                HistUtil.save_hist(self.HTrkMCMom[isid],hdf5file)
+                HistUtil.save_hist(self.HTrkResoMom[isid],hdf5file)
+                HistUtil.save_hist(self.HTrkRespMom[isid],hdf5file)
+                HistUtil.save_hist(self.HTrkRefRespMom[isid],hdf5file)
+            HistUtil.save_hist(self.HTgtRho,hdf5file)
+            HistUtil.save_hist(self.HTgtRhoMC,hdf5file)
+            HistUtil.save_hist(self.HOriginRho,hdf5file)
+            HistUtil.save_hist(self.HTgtFoil,hdf5file)
+            HistUtil.save_hist(self.HTgtFoilMC,hdf5file)
+            HistUtil.save_hist(self.HOriginFoil,hdf5file)
+            HistUtil.save_hist(self.HTgtCosT,hdf5file)
+            HistUtil.save_hist(self.HTgtCosTMC,hdf5file)
+            HistUtil.save_hist(self.HOriginCosT,hdf5file)
 
             # save my new histograms
 
-            self.HDTgtMomB12.save(hdf5file)
-            self.HDTgtMomB34.save(hdf5file)
-            self.HDTgtMomB56.save(hdf5file)
-            self.HDTgtMomB78.save(hdf5file)
-            self.HDTgtMomB9p.save(hdf5file)
+            HistUtil.save_hist(self.HDTgtMomB12,hdf5file)
+            HistUtil.save_hist(self.HDTgtMomB34,hdf5file)
+            HistUtil.save_hist(self.HDTgtMomB56,hdf5file)
+            HistUtil.save_hist(self.HDTgtMomB78,hdf5file)
+            HistUtil.save_hist(self.HDTgtMomB9p,hdf5file)
 
 
 #            fig, (tgtMomResp,momResp[0], momResp[1], momResp[2]) = plt.subplots(1,4,layout='constrained', figsize=(15,5))

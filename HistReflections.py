@@ -10,8 +10,8 @@ import numpy as np
 import math
 from scipy import special
 import SurfaceIds as SID
-import MyHist
 import h5py
+import HistUtil
 
 class HistReflections(object):
     def __init__(self,momrange,pdg,sid):
@@ -29,20 +29,20 @@ class HistReflections(object):
         self.SID = sid
         self.CompName = SID.SurfaceName(sid)
         # fit quality histograms
-        self.HUpTQ = MyHist.MyHist(name="HUpTQ",bins=100,range=[0.0,1.0],label="Up TrkQual",title="Track Quality",xlabel="ANN Result")
-        self.HDnTQ = MyHist.MyHist(name="HDnTQ",bins=100,range=[0.0,1.0],label="Down TrkQual",title="Track Quality",xlabel="ANN Result")
-        self.HUpFitCon = MyHist.MyHist(name="HUpFitCon",bins=100,range=[0.0,1.0],label="Up FitCon",title="Fit Consistency",xlabel="")
-        self.HDnFitCon = MyHist.MyHist(name="HDnFitCon",bins=100,range=[0.0,1.0],label="Down FitCon",title="Fit Consistency",xlabel="")
-        self.HUpNHits = MyHist.MyHist(name="HUpNHits",bins=100,range=[0.5,100.5],label="Up NActive",title="Fit N Hits",xlabel="N Hits")
-        self.HDnNHits = MyHist.MyHist(name="HDnNHits",bins=100,range=[0.5,100.5],label="Down NActive",title="Fit N Hits",xlabel="N Hits")
+        self.HUpTQ = HistUtil.new_hist(name="HUpTQ",bins=100,range=[0.0,1.0],label="Up TrkQual",title="Track Quality",xlabel="ANN Result")
+        self.HDnTQ = HistUtil.new_hist(name="HDnTQ",bins=100,range=[0.0,1.0],label="Down TrkQual",title="Track Quality",xlabel="ANN Result")
+        self.HUpFitCon = HistUtil.new_hist(name="HUpFitCon",bins=100,range=[0.0,1.0],label="Up FitCon",title="Fit Consistency",xlabel="")
+        self.HDnFitCon = HistUtil.new_hist(name="HDnFitCon",bins=100,range=[0.0,1.0],label="Down FitCon",title="Fit Consistency",xlabel="")
+        self.HUpNHits = HistUtil.new_hist(name="HUpNHits",bins=100,range=[0.5,100.5],label="Up NActive",title="Fit N Hits",xlabel="N Hits")
+        self.HDnNHits = HistUtil.new_hist(name="HDnNHits",bins=100,range=[0.5,100.5],label="Down NActive",title="Fit N Hits",xlabel="N Hits")
 
         # intersection histograms
         nNMatBins = 31
         NMatRange = [-0.5,30.5]
-        self.HNST = MyHist.MyHist(bins=nNMatBins,range=NMatRange,name="NInter",label="All ST",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
-        self.HNIPA = MyHist.MyHist(bins=nNMatBins,range=NMatRange,name="NInter",label="All IPA",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
-        self.HNSTTgt = MyHist.MyHist(bins=nNMatBins,range=NMatRange,name="NInter",label="Target ST",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
-        self.HNIPATgt = MyHist.MyHist(bins=nNMatBins,range=NMatRange,name="NInter",label="Target IPA",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
+        self.HNST = HistUtil.new_hist(bins=nNMatBins,range=NMatRange,name="NInter",label="All ST",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
+        self.HNIPA = HistUtil.new_hist(bins=nNMatBins,range=NMatRange,name="NInter",label="All IPA",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
+        self.HNSTTgt = HistUtil.new_hist(bins=nNMatBins,range=NMatRange,name="NInter",label="Target ST",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
+        self.HNIPATgt = HistUtil.new_hist(bins=nNMatBins,range=NMatRange,name="NInter",label="Target IPA",xlabel="N Intersections",title=self.PDGName+" Material Intersections")
         # Momentum histograms
         nMomBins = 100
         momrange=(40.0,220.0)
@@ -55,45 +55,45 @@ class HistReflections(object):
         deltaTimeRange = [-8,8]
         nUpMatBins = 100
         upMatRange = [-8,1]
-        self.HDnMom = MyHist.MyHist(name="DnMom",label="All", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+self.PDGName+" Downstream Momentum at "+self.CompName)
-        self.HDnTgtMom = MyHist.MyHist(name="DnMom",label="$N_{ST}$>0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-        self.HDnNoTgtMom = MyHist.MyHist(name="DnMom",label="$N_{ST}$==0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-        self.HDnNoIPAMom = MyHist.MyHist(name="DnMom",label="$N_{IPA}$==0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-        self.HDnNoMatMom = MyHist.MyHist(name="DnMom",label="No Material", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
-        self.HUpMom = MyHist.MyHist(name="UpMom",label="All", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-        self.HUpTgtMom = MyHist.MyHist(name="UpMom",label="$N_{ST}$>0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
-        self.HUpNoMatMom = MyHist.MyHist(name="UpMom",label="No Material", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+        self.HDnMom = HistUtil.new_hist(name="DnMom",label="All", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnTgtMom = HistUtil.new_hist(name="DnMom",label="$N_{ST}$>0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnNoTgtMom = HistUtil.new_hist(name="DnMom",label="$N_{ST}$==0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnNoIPAMom = HistUtil.new_hist(name="DnMom",label="$N_{IPA}$==0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HDnNoMatMom = HistUtil.new_hist(name="DnMom",label="No Material", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)", title=self.PDGName+" Downstream Momentum at "+self.CompName)
+        self.HUpMom = HistUtil.new_hist(name="UpMom",label="All", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+        self.HUpTgtMom = HistUtil.new_hist(name="UpMom",label="$N_{ST}$>0", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
+        self.HUpNoMatMom = HistUtil.new_hist(name="UpMom",label="No Material", bins=nMomBins, range=momrange, xlabel="Fit Momentum (MeV)",title=self.PDGName+" Upstream Momentum at "+self.CompName)
 
         # Momentum difference histograms, at upstream and downstream directions
-        self.HDnDeltaMom = MyHist.MyHist(name="DnDeltaMom",label="All", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Downstream $\\Delta$ Momentum at "+self.CompName)
-        self.HDnDeltaTgtMom = MyHist.MyHist(name="DnDeltaMom",label="$N_{ST}$>0", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Downstream $\\Delta$ Momentum at "+self.CompName)
-        self.HDnDeltaNoMatMom = MyHist.MyHist(name="DnDeltaMom",label="No Material", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Downstream $\\Delta$ Momentum at "+self.CompName)
+        self.HDnDeltaMom = HistUtil.new_hist(name="DnDeltaMom",label="All", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Downstream $\\Delta$ Momentum at "+self.CompName)
+        self.HDnDeltaTgtMom = HistUtil.new_hist(name="DnDeltaMom",label="$N_{ST}$>0", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Downstream $\\Delta$ Momentum at "+self.CompName)
+        self.HDnDeltaNoMatMom = HistUtil.new_hist(name="DnDeltaMom",label="No Material", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Downstream $\\Delta$ Momentum at "+self.CompName)
 
-        self.HUpDeltaMom = MyHist.MyHist(name="UpDeltaMom",label="All", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Upstream $\\Delta$ Momentum at "+self.CompName)
-        self.HUpDeltaTgtMom = MyHist.MyHist(name="UpDeltaMom",label="$N_{ST}$>0", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Upstream $\\Delta$ Momentum at "+self.CompName)
-        self.HUpDeltaNoMatMom = MyHist.MyHist(name="UpDeltaMom",label="No Material", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Upstream $\\Delta$ Momentum at "+self.CompName)
+        self.HUpDeltaMom = HistUtil.new_hist(name="UpDeltaMom",label="All", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Upstream $\\Delta$ Momentum at "+self.CompName)
+        self.HUpDeltaTgtMom = HistUtil.new_hist(name="UpDeltaMom",label="$N_{ST}$>0", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Upstream $\\Delta$ Momentum at "+self.CompName)
+        self.HUpDeltaNoMatMom = HistUtil.new_hist(name="UpDeltaMom",label="No Material", bins=nDeltaMomBins, range=deltaMomRange, xlabel="Downstream - Upstream Momentum (MeV)",title=self.PDGName+"Upstream $\\Delta$ Momentum at "+self.CompName)
 
         # Upstream material effect: compare fit and extrapolation (upstream and downstream fits)
-        self.HUpMatUpExtrap = MyHist.MyHist(name="UpMatUpExtrap",label="UpExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (All)")
-        self.HUpMatTgtUpExtrap = MyHist.MyHist(name="UpMatTgtUpExtrap",label="UpExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (Target)")
-        self.HUpMatNoMatUpExtrap = MyHist.MyHist(name="UpMatNoMatUpExtrap",label="UpExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (NoMat)")
-        self.HUpMatDnExtrap = MyHist.MyHist(name="UpMatDnExtrap",label="DnExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (All)")
-        self.HUpMatTgtDnExtrap = MyHist.MyHist(name="UpMatTgtDnExtrap",label="DnExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (Target)")
-        self.HUpMatNoMatDnExtrap = MyHist.MyHist(name="UpMatNoMatDnExtrap",label="DnExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (NoMat)")
-        self.HUpMatFit = MyHist.MyHist(name="UpMatFit",label="Fit",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (All)")
-        self.HUpMatTgtFit = MyHist.MyHist(name="UpMatTgtFit",label="Fit",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (Target)")
-        self.HUpMatNoMatFit = MyHist.MyHist(name="UpMatNoMatFit",label="Fit",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (NoMat)")
+        self.HUpMatUpExtrap = HistUtil.new_hist(name="UpMatUpExtrap",label="UpExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (All)")
+        self.HUpMatTgtUpExtrap = HistUtil.new_hist(name="UpMatTgtUpExtrap",label="UpExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (Target)")
+        self.HUpMatNoMatUpExtrap = HistUtil.new_hist(name="UpMatNoMatUpExtrap",label="UpExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (NoMat)")
+        self.HUpMatDnExtrap = HistUtil.new_hist(name="UpMatDnExtrap",label="DnExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (All)")
+        self.HUpMatTgtDnExtrap = HistUtil.new_hist(name="UpMatTgtDnExtrap",label="DnExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (Target)")
+        self.HUpMatNoMatDnExtrap = HistUtil.new_hist(name="UpMatNoMatDnExtrap",label="DnExtrap",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (NoMat)")
+        self.HUpMatFit = HistUtil.new_hist(name="UpMatFit",label="Fit",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (All)")
+        self.HUpMatTgtFit = HistUtil.new_hist(name="UpMatTgtFit",label="Fit",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (Target)")
+        self.HUpMatNoMatFit = HistUtil.new_hist(name="UpMatNoMatFit",label="Fit",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (NoMat)")
         # MC
-        self.HUpMatMC = MyHist.MyHist(name="UpMatMC",label="MC",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (All)")
-        self.HUpMatTgtMC = MyHist.MyHist(name="UpMatTgtMC",label="MC",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (Tgt)")
-        self.HUpMatNoMatMC = MyHist.MyHist(name="UpMatNoMatMC",label="MC",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (NoMat)")
+        self.HUpMatMC = HistUtil.new_hist(name="UpMatMC",label="MC",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (All)")
+        self.HUpMatTgtMC = HistUtil.new_hist(name="UpMatTgtMC",label="MC",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (Tgt)")
+        self.HUpMatNoMatMC = HistUtil.new_hist(name="UpMatNoMatMC",label="MC",bins=nUpMatBins, range=upMatRange, xlabel="$\\Delta$ Momentum (MeV)",title=self.PDGName+"Upstream Material $\\Delta$ P (NoMat)")
         # Resolution
-        self.HUpMomRes = MyHist.MyHist(name="UpMomRes",label="All",bins=nMomResBins, range=momResRange, xlabel="Reco-MC Momentum (MeV)",title=self.PDGName+"Upstream Track Momentum Resolution at "+self.CompName)
-        self.HDnMomRes = MyHist.MyHist(name="DnMomRes",label="All",bins=nMomResBins, range=momResRange, xlabel="Reco-MC Momentum (MeV)",title=self.PDGName+"Downstream Track Momentum Resolution at "+self.CompName)
+        self.HUpMomRes = HistUtil.new_hist(name="UpMomRes",label="All",bins=nMomResBins, range=momResRange, xlabel="Reco-MC Momentum (MeV)",title=self.PDGName+"Upstream Track Momentum Resolution at "+self.CompName)
+        self.HDnMomRes = HistUtil.new_hist(name="DnMomRes",label="All",bins=nMomResBins, range=momResRange, xlabel="Reco-MC Momentum (MeV)",title=self.PDGName+"Downstream Track Momentum Resolution at "+self.CompName)
 
         # Time differences
-        self.HdnDeltaTime = MyHist.MyHist(name="DeltaTime",label="Upstream",bins=nDeltaTimeBins, range=deltaTimeRange, xlabel="Downstream - Upstream time (ns)",title=self.PDGName+" $\\Delta$ Time at "+self.CompName)
-        self.HupDeltaTime = MyHist.MyHist(name="DeltaTime",label="Downstream",bins=nDeltaTimeBins, range=deltaTimeRange, xlabel="Downstream - Upstream time (ns)",title=self.PDGName+" $\\Delta$ Time at "+self.CompName)
+        self.HdnDeltaTime = HistUtil.new_hist(name="DeltaTime",label="Upstream",bins=nDeltaTimeBins, range=deltaTimeRange, xlabel="Downstream - Upstream time (ns)",title=self.PDGName+" $\\Delta$ Time at "+self.CompName)
+        self.HupDeltaTime = HistUtil.new_hist(name="DeltaTime",label="Downstream",bins=nDeltaTimeBins, range=deltaTimeRange, xlabel="Downstream - Upstream time (ns)",title=self.PDGName+" $\\Delta$ Time at "+self.CompName)
 
     def Print(self):
         print("HistReflections, nhits =",self.MinNHits,"Mom Range",self.MomRange,"Comparison at",self.CompName,"PDG",self.PDGName)
@@ -293,54 +293,54 @@ class HistReflections(object):
 
 
 
-        print("\nFrom", NEvent,"total events found", NGood, "with good reco,", NMatch,"matching reflections,", NFinal, "final selections and",self.HUpTgtMom.integral(), "with Target")
+        print("\nFrom", NEvent,"total events found", NGood, "with good reco,", NMatch,"matching reflections,", NFinal, "final selections and",self.HUpTgtMom.sum(), "with Target")
 
     def Write(self,savefile):
         with h5py.File(savefile, 'w') as hdf5file:
-            self.HUpNHits.save(hdf5file)
-            self.HDnNHits.save(hdf5file)
-            self.HUpFitCon.save(hdf5file)
-            self.HDnFitCon.save(hdf5file)
-            self.HUpTQ.save(hdf5file)
-            self.HDnTQ.save(hdf5file)
+            HistUtil.save_hist(self.HUpNHits,hdf5file)
+            HistUtil.save_hist(self.HDnNHits,hdf5file)
+            HistUtil.save_hist(self.HUpFitCon,hdf5file)
+            HistUtil.save_hist(self.HDnFitCon,hdf5file)
+            HistUtil.save_hist(self.HUpTQ,hdf5file)
+            HistUtil.save_hist(self.HDnTQ,hdf5file)
 
-            self.HNST.save(hdf5file)
-            self.HNSTTgt.save(hdf5file)
-            self.HNIPA.save(hdf5file)
-            self.HNIPATgt.save(hdf5file)
-            self.HDnMom.save(hdf5file)
-            self.HDnTgtMom.save(hdf5file)
-            self.HDnNoTgtMom.save(hdf5file)
-            self.HDnNoIPAMom.save(hdf5file)
-            self.HDnNoMatMom.save(hdf5file)
-            self.HUpMom.save(hdf5file)
-            self.HUpTgtMom.save(hdf5file)
-            self.HUpNoMatMom.save(hdf5file)
+            HistUtil.save_hist(self.HNST,hdf5file)
+            HistUtil.save_hist(self.HNSTTgt,hdf5file)
+            HistUtil.save_hist(self.HNIPA,hdf5file)
+            HistUtil.save_hist(self.HNIPATgt,hdf5file)
+            HistUtil.save_hist(self.HDnMom,hdf5file)
+            HistUtil.save_hist(self.HDnTgtMom,hdf5file)
+            HistUtil.save_hist(self.HDnNoTgtMom,hdf5file)
+            HistUtil.save_hist(self.HDnNoIPAMom,hdf5file)
+            HistUtil.save_hist(self.HDnNoMatMom,hdf5file)
+            HistUtil.save_hist(self.HUpMom,hdf5file)
+            HistUtil.save_hist(self.HUpTgtMom,hdf5file)
+            HistUtil.save_hist(self.HUpNoMatMom,hdf5file)
             #
-            self.HDnDeltaMom.save(hdf5file)
-            self.HUpDeltaMom.save(hdf5file)
-            self.HDnDeltaTgtMom.save(hdf5file)
-            self.HUpDeltaTgtMom.save(hdf5file)
-            self.HDnDeltaNoMatMom.save(hdf5file)
-            self.HUpDeltaNoMatMom.save(hdf5file)
+            HistUtil.save_hist(self.HDnDeltaMom,hdf5file)
+            HistUtil.save_hist(self.HUpDeltaMom,hdf5file)
+            HistUtil.save_hist(self.HDnDeltaTgtMom,hdf5file)
+            HistUtil.save_hist(self.HUpDeltaTgtMom,hdf5file)
+            HistUtil.save_hist(self.HDnDeltaNoMatMom,hdf5file)
+            HistUtil.save_hist(self.HUpDeltaNoMatMom,hdf5file)
             #
-            self.HUpMatUpExtrap.save(hdf5file)
-            self.HUpMatDnExtrap.save(hdf5file)
-            self.HUpMatFit.save(hdf5file)
-            self.HUpMatTgtUpExtrap.save(hdf5file)
-            self.HUpMatTgtDnExtrap.save(hdf5file)
-            self.HUpMatTgtFit.save(hdf5file)
-            self.HUpMatNoMatUpExtrap.save(hdf5file)
-            self.HUpMatNoMatDnExtrap.save(hdf5file)
-            self.HUpMatNoMatFit.save(hdf5file)
+            HistUtil.save_hist(self.HUpMatUpExtrap,hdf5file)
+            HistUtil.save_hist(self.HUpMatDnExtrap,hdf5file)
+            HistUtil.save_hist(self.HUpMatFit,hdf5file)
+            HistUtil.save_hist(self.HUpMatTgtUpExtrap,hdf5file)
+            HistUtil.save_hist(self.HUpMatTgtDnExtrap,hdf5file)
+            HistUtil.save_hist(self.HUpMatTgtFit,hdf5file)
+            HistUtil.save_hist(self.HUpMatNoMatUpExtrap,hdf5file)
+            HistUtil.save_hist(self.HUpMatNoMatDnExtrap,hdf5file)
+            HistUtil.save_hist(self.HUpMatNoMatFit,hdf5file)
 
-            self.HUpMatMC.save(hdf5file)
-            self.HUpMatTgtMC.save(hdf5file)
-            self.HUpMatNoMatMC.save(hdf5file)
+            HistUtil.save_hist(self.HUpMatMC,hdf5file)
+            HistUtil.save_hist(self.HUpMatTgtMC,hdf5file)
+            HistUtil.save_hist(self.HUpMatNoMatMC,hdf5file)
 
-            self.HUpMomRes.save(hdf5file)
-            self.HDnMomRes.save(hdf5file)
+            HistUtil.save_hist(self.HUpMomRes,hdf5file)
+            HistUtil.save_hist(self.HDnMomRes,hdf5file)
             #
-            self.HdnDeltaTime.save(hdf5file)
-            self.HupDeltaTime.save(hdf5file)
+            HistUtil.save_hist(self.HdnDeltaTime,hdf5file)
+            HistUtil.save_hist(self.HupDeltaTime,hdf5file)
 
