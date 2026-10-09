@@ -110,7 +110,7 @@ class HistReflections(object):
             Files[i] = files[i]+":"+treename
         ibatch = 0
         print("Processing batch ",end=' ')
-        for batch,rep in uproot.iterate(Files,filter_name="/evtinfo|trk.trk|trkmc|trksegs|trkmcsim|trksegsmc|trkqual|trksegpars_lh/i",report=True):
+        for batch,rep in uproot.iterate(Files,filter_name="/evtinfo|trk.trk|trksegs|trksegsmc|trkqual/i",report=True):
             print(ibatch,end=' ')
             ibatch = ibatch+1
             segs = batch['trksegs'] # track fit samples
